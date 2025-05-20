@@ -28,16 +28,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 public class FileServiceTest {
-    
+
     private Store store;
     private Cashier cashier;
     private Customer customer;
     private FileServiceImpl fileService;
     private CashDesk cashDesk;
-    
+
     @TempDir
     File tempDir;
-    
+
     @BeforeEach
     public void setUp() {
         StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
@@ -45,12 +45,12 @@ public class FileServiceTest {
         cashier = new Cashier("C1", "Bob", 1000);
         customer = new Customer("CU1", "Ann", 100);
         fileService = new FileServiceImpl();
-        
+
         // Create cash desk and assign cashier
         cashDesk = new CashDesk();
         store.addCashier(cashier);
         store.addCashDesk(cashDesk);
-        
+
         try {
             store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
         } catch (Exception e) {
@@ -64,38 +64,38 @@ public class FileServiceTest {
             // Setup product and receipt
             Product notebook = new NonFoodProduct("N1", "Notebook", 1, LocalDate.MAX, 5);
             store.addProduct(notebook);
-            
+
             // Generate a receipt by selling the product
             Receipt receipt = store.sell(cashier, "N1", 1, customer);
-            
+
             // Save the receipt
             fileService.save(receipt, tempDir);
-            
+
             // Verify loading all receipts returns the correct amount
             List<Receipt> loadedReceipts = fileService.loadAll(tempDir);
             assertEquals(1, loadedReceipts.size(), "Should load 1 receipt from the directory");
-            
+
             // Verify loading specific receipt
             Receipt loadedReceipt = fileService.load(tempDir, receipt.getNumber());
             assertNotNull(loadedReceipt, "Should be able to load the saved receipt");
             assertEquals(receipt.getNumber(), loadedReceipt.getNumber(), "Receipt number should match");
-            
-        } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException | 
-                InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException | 
-                IOException | CashDeskNotAssignedException | ClassNotFoundException e) {
+
+        } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
+                | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
+                | IOException | CashDeskNotAssignedException | ClassNotFoundException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
-    
+
     @Test
     void testLoadingNonExistentReceipt() {
         try {
             // Attempt to load a receipt that doesn't exist
             Receipt nonExistentReceipt = fileService.load(tempDir, 999);
-            
+
             // Should return null if receipt not found
             assertEquals(null, nonExistentReceipt, "Should return null for non-existent receipt");
-            
+
         } catch (IOException | ClassNotFoundException e) {
             fail("Test failed with exception: " + e.getMessage());
         }

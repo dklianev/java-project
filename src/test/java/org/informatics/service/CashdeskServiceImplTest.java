@@ -204,4 +204,4 @@ class CashdeskServiceImplTest {
         assertTrue(result.isPresent());
         assertEquals(mockCashier, result.get());
     }
-} 
+}

@@ -21,11 +21,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ExceptionTest {
-    
+
     private Store store;
     private Cashier cashier;
     private Customer customer;
-    
+
     @BeforeEach
     public void setUp() {
         StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
@@ -33,7 +33,7 @@ public class ExceptionTest {
         cashier = new Cashier("C1", "Test Cashier", 1000);
         customer = new Customer("CU1", "Test Customer", 100);
         store.addCashier(cashier);
-        
+
         // Create cash desk and assign cashier to allow selling
         CashDesk desk = new CashDesk();
         store.addCashDesk(desk);
@@ -43,7 +43,7 @@ public class ExceptionTest {
             fail("Failed to set up test environment: " + e.getMessage());
         }
     }
-    
+
     @Test
     void testShouldThrowProductNotFoundException() {
         try {
@@ -51,12 +51,12 @@ public class ExceptionTest {
             fail("Expected ProductNotFoundException was not thrown");
         } catch (ProductNotFoundException ex) {
             // Test passed - expected exception
-        } catch (ProductExpiredException | InvalidQuantityException | InsufficientQuantityException | 
-                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (ProductExpiredException | InvalidQuantityException | InsufficientQuantityException
+                | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
-    
+
     @Test
     void testShouldThrowInvalidQuantityExceptionForZeroQuantity() {
         try {
@@ -67,12 +67,12 @@ public class ExceptionTest {
             // Test passed - expected exception
         } catch (DuplicateProductException ex) {
             fail("Unexpected exception when adding product: " + ex.getMessage());
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException | 
-                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
+                | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
-    
+
     @Test
     void testShouldThrowInvalidQuantityExceptionForNegativeQuantity() {
         try {
@@ -83,12 +83,12 @@ public class ExceptionTest {
             // Test passed - expected exception
         } catch (DuplicateProductException ex) {
             fail("Unexpected exception when adding product: " + ex.getMessage());
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException | 
-                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
+                | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
-    
+
     @Test
     void testShouldThrowInsufficientQuantityException() {
         try {
@@ -99,12 +99,12 @@ public class ExceptionTest {
             // Test passed - expected exception
         } catch (DuplicateProductException ex) {
             fail("Unexpected exception when adding product: " + ex.getMessage());
-        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | 
-                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException
+                | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
-    
+
     @Test
     void testShouldThrowProductExpiredException() {
         try {
@@ -115,12 +115,12 @@ public class ExceptionTest {
             // Test passed - expected exception
         } catch (DuplicateProductException ex) {
             fail("Unexpected exception when adding product: " + ex.getMessage());
-        } catch (ProductNotFoundException | InvalidQuantityException | InsufficientQuantityException | 
-                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (ProductNotFoundException | InvalidQuantityException | InsufficientQuantityException
+                | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
-    
+
     @Test
     void testShouldThrowInsufficientBudgetException() {
         try {
@@ -132,12 +132,12 @@ public class ExceptionTest {
             // Test passed - expected exception
         } catch (DuplicateProductException ex) {
             fail("Unexpected exception when adding product: " + ex.getMessage());
-        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | 
-                InsufficientQuantityException | IOException | CashDeskNotAssignedException ex) {
+        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException
+                | InsufficientQuantityException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
-    
+
     @Test
     void testShouldThrowDuplicateProductException() {
         try {
@@ -148,7 +148,7 @@ public class ExceptionTest {
             // Test passed - expected exception
         }
     }
-    
+
     @Test
     void testShouldThrowCashDeskNotAssignedException() {
         try {
@@ -161,8 +161,8 @@ public class ExceptionTest {
             // Test passed - expected exception
         } catch (DuplicateProductException ex) {
             fail("Unexpected exception when adding product: " + ex.getMessage());
-        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | 
-                InsufficientQuantityException | InsufficientBudgetException | IOException ex) {
+        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException
+                | InsufficientQuantityException | InsufficientBudgetException | IOException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }

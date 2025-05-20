@@ -45,6 +45,16 @@ public class Receipt implements Serializable {
     }
 
     public void add(Product product, int quantity, double price) {
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be positive");
+        }
+        if (price < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+        
         lines.add(new Line(product, quantity, price));
     }
 
@@ -60,9 +70,8 @@ public class Receipt implements Serializable {
         return COUNTER;
     }
 
-    /**
-     * Saves this receipt as both a .txt and a .ser file under the given directory.
-     */
+
+     //Saves this receipt as both a .txt and a .ser file under the given directory.
     public void save(File dir) throws IOException {
         if (!dir.exists()) dir.mkdirs();
 

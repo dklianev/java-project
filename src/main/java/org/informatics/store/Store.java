@@ -8,13 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.informatics.config.StoreConfig;
 import org.informatics.entity.CashDesk;
 import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
 import org.informatics.entity.Product;
 import org.informatics.entity.Receipt;
-import org.informatics.config.StoreConfig;
 import org.informatics.exception.CashDeskNotAssignedException;
+import org.informatics.exception.CashDeskOccupiedException;
 import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
@@ -77,8 +78,12 @@ public class Store {
             .findFirst()
             .ifPresent(CashDesk::releaseCashier);
 
-        desk.assignCashier(cashier);
-        System.out.println("Cashier " + cashier.getName() + " assigned to desk " + desk.getId());
+        try {
+            desk.assignCashier(cashier);
+            System.out.println("Cashier " + cashier.getName() + " assigned to desk " + desk.getId());
+        } catch (CashDeskOccupiedException e) {
+            throw new Exception(e.getMessage());
+        }
     }
 
     public void releaseCashierFromDesk(String deskId) throws Exception {

@@ -30,7 +30,7 @@ class StoreServiceImplTest {
 
     StoreServiceImpl storeService;
     Store mockStore;
-    
+
     @TempDir
     File tempDir;
 
@@ -50,18 +50,18 @@ class StoreServiceImplTest {
         int quantity = 2;
         Customer mockCustomer = Mockito.mock(Customer.class);
         Receipt mockReceipt = Mockito.mock(Receipt.class);
-        
+
         when(mockStore.sell(mockCashier, productId, quantity, mockCustomer))
                 .thenReturn(mockReceipt);
-        
+
         // Act
         Receipt result = storeService.sell(mockCashier, productId, quantity, mockCustomer, tempDir);
-        
+
         // Assert
         assertEquals(mockReceipt, result);
         verify(mockReceipt).save(tempDir);
     }
-    
+
     @Test
     void whenSell_andStoreThrowsException_thenExceptionIsThrown() throws ProductNotFoundException,
             ProductExpiredException, InvalidQuantityException, InsufficientQuantityException,
@@ -72,10 +72,10 @@ class StoreServiceImplTest {
         int quantity = 2;
         Customer mockCustomer = Mockito.mock(Customer.class);
         ProductNotFoundException expectedException = new ProductNotFoundException("P1");
-        
+
         when(mockStore.sell(mockCashier, productId, quantity, mockCustomer))
                 .thenThrow(expectedException);
-        
+
         try {
             // Act
             storeService.sell(mockCashier, productId, quantity, mockCustomer, tempDir);
@@ -85,7 +85,7 @@ class StoreServiceImplTest {
             assertNotNull(e);
         }
     }
-    
+
     @Test
     void whenSell_andReceiptSaveThrowsException_thenExceptionIsThrown() throws ProductNotFoundException,
             ProductExpiredException, InvalidQuantityException, InsufficientQuantityException,
@@ -97,11 +97,11 @@ class StoreServiceImplTest {
         Customer mockCustomer = Mockito.mock(Customer.class);
         Receipt mockReceipt = Mockito.mock(Receipt.class);
         IOException expectedException = new IOException("Save failed");
-        
+
         when(mockStore.sell(mockCashier, productId, quantity, mockCustomer))
                 .thenReturn(mockReceipt);
         doThrow(expectedException).when(mockReceipt).save(any(File.class));
-        
+
         try {
             // Act
             storeService.sell(mockCashier, productId, quantity, mockCustomer, tempDir);
@@ -111,17 +111,17 @@ class StoreServiceImplTest {
             assertNotNull(e);
         }
     }
-    
+
     @Test
     void whenTurnover_thenReturnStoreTurnover() {
         // Arrange
         double expectedTurnover = 1234.56;
         when(mockStore.turnover()).thenReturn(expectedTurnover);
-        
+
         // Act
         double result = storeService.turnover();
-        
+
         // Assert
         assertEquals(expectedTurnover, result);
     }
-} 
+}

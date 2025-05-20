@@ -2,6 +2,8 @@ package org.informatics.entity;
 
 import java.io.Serializable;
 
+import org.informatics.exception.CashDeskOccupiedException;
+
 public class CashDesk implements Serializable {
     private static final long serialVersionUID = 1L;
     private static int nextId = 1;
@@ -32,13 +34,14 @@ public class CashDesk implements Serializable {
         return currentCashier != null;
     }
 
-    public void assignCashier(Cashier cashier) {
+    //Assigns a cashier to this cash desk and checks if the cash desk is already occupied by another cashier
+    public void assignCashier(Cashier cashier) throws CashDeskOccupiedException {
         if (this.currentCashier == null) {
             this.currentCashier = cashier;
             this.isOpen = true;
         } else {
-            // Optionally throw an exception or handle if desk is already occupied
-            System.err.println("Cash desk " + id + " is already occupied by " + this.currentCashier.getName());
+            throw new CashDeskOccupiedException(
+                "Cash desk " + id + " is already occupied by " + this.currentCashier.getName());
         }
     }
 

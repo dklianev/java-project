@@ -17,23 +17,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class StoreMissingProductTest {
-    
+
     private Store store;
     private Cashier cashier;
     private Customer customer;
     private CashDesk cashDesk;
-    
+
     @BeforeEach
     public void setUp() {
         // Common configuration values
         StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
         store = new Store(config);
-        
+
         // Setup cashier and customer
         cashier = new Cashier("C1", "Bob", 1000);
         customer = new Customer("CU1", "Ann", 50);
         store.addCashier(cashier);
-        
+
         // Setup cash desk and assign cashier
         cashDesk = new CashDesk();
         store.addCashDesk(cashDesk);
@@ -43,7 +43,7 @@ public class StoreMissingProductTest {
             fail("Failed to set up test environment: " + e.getMessage());
         }
     }
-    
+
     @Test
     void testProductNotFound() {
         try {
@@ -52,25 +52,25 @@ public class StoreMissingProductTest {
             fail("Expected ProductNotFoundException was not thrown");
         } catch (ProductNotFoundException ex) {
             // Test passed - expected exception
-        } catch (IOException | InsufficientBudgetException | InsufficientQuantityException | 
-                InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException ex) {
+        } catch (IOException | InsufficientBudgetException | InsufficientQuantityException
+                | InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
-    
+
     @Test
     void testMultipleProductsNotFound() {
         // Test multiple non-existent products
         String[] nonExistentProductIds = {"XYZ", "ABC", "DEF"};
-        
+
         for (String productId : nonExistentProductIds) {
             try {
                 store.sell(cashier, productId, 1, customer);
                 fail("Expected ProductNotFoundException was not thrown for product " + productId);
             } catch (ProductNotFoundException ex) {
                 // Test passed - expected exception
-            } catch (IOException | InsufficientBudgetException | InsufficientQuantityException | 
-                    InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException ex) {
+            } catch (IOException | InsufficientBudgetException | InsufficientQuantityException
+                    | InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException ex) {
                 fail("Unexpected exception: " + ex.getMessage());
             }
         }

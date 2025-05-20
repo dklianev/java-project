@@ -30,10 +30,9 @@ import org.informatics.service.impl.GoodsServiceImpl;
 import org.informatics.service.impl.StoreServiceImpl;
 import org.informatics.store.Store;
 
-/**
- * Main application class demonstrating the store management system functionality.
- */
+//Main application class demonstrating the store management system functionality.
 public class StoreApplication {
+
     private final Store store;
     private final GoodsServiceImpl goodsService;
     private final CashdeskServiceImpl cashDeskService;
@@ -41,16 +40,16 @@ public class StoreApplication {
     private final FileServiceImpl fileService;
     private final Scanner scanner;
     private final File receiptDir;
-    
+
     public StoreApplication() {
         // Initialize store with configuration
         StoreConfig config = new StoreConfig(
-                0.2,  // 20% markup for groceries
+                0.2, // 20% markup for groceries
                 0.25, // 25% markup for non-food items
-                5,    // 5 days before expiry for discount
-                0.3   // 30% discount for near-expiry items
+                5, // 5 days before expiry for discount
+                0.3 // 30% discount for near-expiry items
         );
-        
+
         store = new Store(config);
         goodsService = new GoodsServiceImpl(store);
         cashDeskService = new CashdeskServiceImpl(store);
@@ -60,27 +59,27 @@ public class StoreApplication {
         receiptDir = new File("receipts");
         receiptDir.mkdirs();
     }
-    
+
     public void start() {
         try {
             System.out.println("============================================");
             System.out.println("      STORE MANAGEMENT SYSTEM");
             System.out.println("============================================");
-            
+
             // Initialize store with sample data
             initializeStore();
-            
+
             int choice;
             do {
                 printMenu();
                 choice = getIntInput("Select option: ");
-                
+
                 try {
                     processChoice(choice);
                 } catch (Exception e) {
                     System.err.println("Error: " + e.getMessage());
                 }
-                
+
                 System.out.println();
             } while (choice != 0);
         } finally {
@@ -89,7 +88,7 @@ public class StoreApplication {
             }
         }
     }
-    
+
     private void initializeStore() {
         // Add cashiers
         try {
@@ -104,28 +103,28 @@ public class StoreApplication {
 
             // Add products
             LocalDate today = LocalDate.now();
-            
+
             // Food products
             goodsService.addProduct(new FoodProduct("F1", "Milk", 1.5, today.plusDays(10), 50));
             goodsService.addProduct(new FoodProduct("F2", "Bread", 1.0, today.plusDays(3), 40));
             goodsService.addProduct(new FoodProduct("F3", "Eggs", 2.5, today.plusDays(15), 30));
             goodsService.addProduct(new FoodProduct("F4", "Cheese", 3.5, today.plusDays(20), 25));
             goodsService.addProduct(new FoodProduct("F5", "Yogurt", 1.2, today.plusDays(4), 35));
-            
+
             // Near expiry product
             goodsService.addProduct(new FoodProduct("F6", "Tomatoes", 2.0, today.plusDays(2), 15));
-            
+
             // Non-food products
             goodsService.addProduct(new NonFoodProduct("N1", "Soap", 1.8, today.plusYears(1), 40));
             goodsService.addProduct(new NonFoodProduct("N2", "Toothpaste", 2.2, today.plusYears(2), 30));
             goodsService.addProduct(new NonFoodProduct("N3", "Shampoo", 4.0, today.plusYears(1), 20));
-            
+
             System.out.println("Store initialized with sample data.");
         } catch (DuplicateProductException e) {
             System.err.println("Error initializing store: " + e.getMessage());
         }
     }
-    
+
     private void printMenu() {
         System.out.println("\n=== MENU ===");
         System.out.println("1. List all products");
@@ -139,71 +138,82 @@ public class StoreApplication {
         System.out.println("9. View receipt count");
         System.out.println("0. Exit");
     }
-    
+
     private void processChoice(int choice) throws Exception {
         switch (choice) {
-            case 1 -> listProducts();
-            case 2 -> listCashiers();
-            case 3 -> listCashDesks();
-            case 4 -> assignCashierToSelectedDesk();
-            case 5 -> releaseCashierFromSelectedDesk();
-            case 6 -> makeSale();
-            case 7 -> viewFinancialStatus();
-            case 8 -> viewAllReceipts();
-            case 9 -> System.out.println("Total receipts issued: " + store.getReceiptCount());
-            case 0 -> System.out.println("Exiting application...");
-            default -> System.out.println("Invalid option, please try again.");
+            case 1 ->
+                listProducts();
+            case 2 ->
+                listCashiers();
+            case 3 ->
+                listCashDesks();
+            case 4 ->
+                assignCashierToSelectedDesk();
+            case 5 ->
+                releaseCashierFromSelectedDesk();
+            case 6 ->
+                makeSale();
+            case 7 ->
+                viewFinancialStatus();
+            case 8 ->
+                viewAllReceipts();
+            case 9 ->
+                System.out.println("Total receipts issued: " + store.getReceiptCount());
+            case 0 ->
+                System.out.println("Exiting application...");
+            default ->
+                System.out.println("Invalid option, please try again.");
         }
     }
-    
+
     private void listProducts() {
         List<Product> products = goodsService.listProducts();
-        
+
         if (products.isEmpty()) {
             System.out.println("No products available.");
             return;
         }
-        
+
         System.out.println("\n=== PRODUCT INVENTORY ===");
-        System.out.printf("%-5s %-20s %-10s %-12s %-10s %-10s\n", 
+        System.out.printf("%-5s %-20s %-10s %-12s %-10s %-10s\n",
                 "ID", "Name", "Type", "Price", "Expiry", "Quantity");
         System.out.println("-------------------------------------------------------------------------");
-        
+
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        
+
         for (Product p : products) {
             double salePrice = p.salePrice(store.getConfig(), today);
             String type = p.getType().toString();
-            System.out.printf("%-5s %-20s %-10s $%-11.2f %-10s %-10d\n", 
-                    p.getId(), 
-                    p.getName(), 
-                    type, 
+            System.out.printf("%-5s %-20s %-10s $%-11.2f %-10s %-10d\n",
+                    p.getId(),
+                    p.getName(),
+                    type,
                     salePrice,
                     p.getExpiry().format(formatter),
                     p.getQuantity());
         }
     }
-    
+
     private void listCashiers() {
         List<Cashier> cashiers = cashDeskService.listCashiers();
-        
+
         if (cashiers.isEmpty()) {
             System.out.println("No cashiers available.");
             return;
         }
-        
+
         System.out.println("\n=== CASHIERS ===");
         System.out.printf("%-5s %-20s %-15s %-15s\n", "ID", "Name", "Monthly Salary", "Assigned Desk");
         System.out.println("---------------------------------------------------------------");
-        
+
         for (Cashier c : cashiers) {
             Optional<CashDesk> assignedDesk = cashDeskService.getAssignedDeskForCashier(c.getId());
             String deskInfo = assignedDesk.map(CashDesk::getId).orElse("None");
             System.out.printf("%-5s %-20s $%-14.2f %-15s\n", c.getId(), c.getName(), c.getMonthlySalary(), deskInfo);
         }
     }
-    
+
     private void listCashDesks() {
         List<CashDesk> desks = cashDeskService.listCashDesks();
         if (desks.isEmpty()) {
@@ -218,7 +228,7 @@ public class StoreApplication {
             System.out.printf("%-5s %-10s %-25s\n", desk.getId(), desk.isOpen(), cashierName);
         }
     }
-    
+
     private void assignCashierToSelectedDesk() throws Exception {
         listCashiers();
         String cashierId = getStringInput("Enter ID of cashier to assign: ");
@@ -230,19 +240,19 @@ public class StoreApplication {
 
         listCashDesks();
         String deskId = getStringInput("Enter ID of cash desk to assign to: ");
-         Optional<CashDesk> deskOpt = cashDeskService.findCashDeskById(deskId);
+        Optional<CashDesk> deskOpt = cashDeskService.findCashDeskById(deskId);
         if (deskOpt.isEmpty()) {
             System.out.println("Cash desk not found.");
             return;
         }
-        
+
         try {
             cashDeskService.assignCashierToDesk(cashierId, deskId);
         } catch (Exception e) {
             System.err.println("Error assigning cashier: " + e.getMessage());
         }
     }
-    
+
     private void releaseCashierFromSelectedDesk() throws Exception {
         listCashDesks();
         String deskId = getStringInput("Enter ID of cash desk to release: ");
@@ -251,8 +261,8 @@ public class StoreApplication {
             System.out.println("Cash desk not found or no cashier assigned.");
             return;
         }
-        if (!deskOpt.get().isOccupied()){
-             System.out.println("Desk " + deskId + " is already free.");
+        if (!deskOpt.get().isOccupied()) {
+            System.out.println("Desk " + deskId + " is already free.");
             return;
         }
 
@@ -262,7 +272,7 @@ public class StoreApplication {
             System.err.println("Error releasing cashier: " + e.getMessage());
         }
     }
-    
+
     private void makeSale() throws Exception {
         // 1. Select cashier
         listCashiers();
@@ -288,9 +298,9 @@ public class StoreApplication {
         String customerId = "CU" + System.currentTimeMillis() % 10000;
         String customerName = getStringInput("Enter customer name: ");
         double customerBalance = getDoubleInput("Enter customer balance: $");
-        
+
         Customer customer = new Customer(customerId, customerName, customerBalance);
-        
+
         // 3. Add products to receipt
         boolean addMoreProducts = true;
         Receipt currentReceiptForSale = null;
@@ -299,46 +309,46 @@ public class StoreApplication {
             try {
                 listProducts();
                 String productId = getStringInput("Enter product ID to add (or 'done' to finish): ");
-                
+
                 if (productId.equalsIgnoreCase("done")) {
                     addMoreProducts = false;
                     if (currentReceiptForSale != null) {
-                         System.out.println("\n--- FINAL RECEIPT ---");
-                         System.out.println(currentReceiptForSale.toString());
-                         System.out.println("---------------------");
+                        System.out.println("\n--- FINAL RECEIPT ---");
+                        System.out.println(currentReceiptForSale.toString());
+                        System.out.println("---------------------");
                     } else {
                         System.out.println("No items added to the sale.");
                     }
                     continue;
                 }
-                
+
                 Product product = store.find(productId);
                 if (product == null) {
                     System.out.println("Product not found.");
                     continue;
                 }
-                
+
                 int quantity = getIntInput("Enter quantity: ");
                 if (quantity <= 0) {
                     System.out.println("Quantity must be positive.");
                     continue;
                 }
-                
+
                 // Try to sell the product
                 Receipt r = storeService.sell(selectedCashier, productId, quantity, customer, receiptDir);
-                
+
                 if (currentReceiptForSale == null) {
                     currentReceiptForSale = r;
                 } else {
                     currentReceiptForSale = r;
                 }
-                
+
                 System.out.println("Product added successfully!");
                 System.out.println(r.toString());
-                                
-            } catch (ProductNotFoundException | ProductExpiredException | 
-                    InvalidQuantityException | InsufficientQuantityException | 
-                    InsufficientBudgetException | CashDeskNotAssignedException e) {
+
+            } catch (ProductNotFoundException | ProductExpiredException
+                    | InvalidQuantityException | InsufficientQuantityException
+                    | InsufficientBudgetException | CashDeskNotAssignedException e) {
                 System.err.println("Sale Error: " + e.getMessage());
                 if (e instanceof InsufficientBudgetException || e instanceof CashDeskNotAssignedException) {
                     addMoreProducts = false;
@@ -349,7 +359,7 @@ public class StoreApplication {
             }
         }
     }
-    
+
     private void viewFinancialStatus() {
         System.out.println("\n=== FINANCIAL STATUS ===");
         System.out.printf("Total turnover (Revenue)         : $%.2f\n", store.turnover());
@@ -359,13 +369,13 @@ public class StoreApplication {
         System.out.printf("Operating Profit                 : $%.2f\n", store.profit());
         System.out.println("---------------------------------------------------");
         System.out.printf("Total Cost of All Goods Supplied : $%.2f\n", store.getTotalCostOfAllGoodsSupplied());
-        
+
         Map<String, Integer> soldItems = store.getSoldItems();
         if (!soldItems.isEmpty()) {
             System.out.println("\n=== SOLD ITEMS ===");
             System.out.printf("%-5s %-20s %-10s\n", "ID", "Quantity", "Product");
             System.out.println("----------------------------------------");
-            
+
             for (Map.Entry<String, Integer> entry : soldItems.entrySet()) {
                 Product p = store.find(entry.getKey());
                 String productName = p != null ? p.getName() : "Unknown";
@@ -373,22 +383,22 @@ public class StoreApplication {
             }
         }
     }
-    
+
     private void viewAllReceipts() {
         try {
             List<Receipt> receipts = fileService.loadAll(receiptDir);
-            
+
             if (receipts.isEmpty()) {
                 System.out.println("No receipts available.");
                 return;
             }
-            
+
             System.out.println("\n=== ALL RECEIPTS ===");
             for (Receipt r : receipts) {
-                System.out.println("Receipt #" + r.getNumber() + " - Cashier: " + 
-                        r.getCashier().getName() + " - Total: $" + r.total());
+                System.out.println("Receipt #" + r.getNumber() + " - Cashier: "
+                        + r.getCashier().getName() + " - Total: $" + r.total());
             }
-            
+
             int receiptNumber = getIntInput("Enter receipt number to view details (0 to cancel): ");
             if (receiptNumber > 0) {
                 Receipt r = fileService.load(receiptDir, receiptNumber);
@@ -402,7 +412,7 @@ public class StoreApplication {
             System.err.println("Error loading receipts: " + e.getMessage());
         }
     }
-    
+
     private int getIntInput(String prompt) {
         System.out.print(prompt);
         while (!scanner.hasNextInt()) {
@@ -414,7 +424,7 @@ public class StoreApplication {
         scanner.nextLine(); // Consume the newline
         return value;
     }
-    
+
     private double getDoubleInput(String prompt) {
         System.out.print(prompt);
         while (!scanner.hasNextDouble()) {
@@ -426,14 +436,14 @@ public class StoreApplication {
         scanner.nextLine(); // Consume the newline
         return value;
     }
-    
+
     private String getStringInput(String prompt) {
         System.out.print(prompt);
         return scanner.nextLine();
     }
-    
+
     public static void main(String[] args) {
         StoreApplication app = new StoreApplication();
         app.start();
     }
-} 
+}

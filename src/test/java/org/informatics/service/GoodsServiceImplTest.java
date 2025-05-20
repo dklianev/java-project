@@ -36,68 +36,68 @@ class GoodsServiceImplTest {
         Product mockProduct2 = Mockito.mock(Product.class);
         products.add(mockProduct1);
         products.add(mockProduct2);
-        
+
         when(mockStore.listProducts()).thenReturn(products);
-        
+
         // Act
         List<Product> result = goodsService.listProducts();
-        
+
         // Assert
         assertEquals(2, result.size());
         assertEquals(products, result);
     }
-    
+
     @Test
     void whenFindExistingProduct_thenReturnProduct() {
         // Arrange
         String productId = "P1";
         Product mockProduct = Mockito.mock(Product.class);
-        
+
         when(mockStore.find(productId)).thenReturn(mockProduct);
-        
+
         // Act
         Product result = goodsService.find(productId);
-        
+
         // Assert
         assertNotNull(result);
         assertEquals(mockProduct, result);
     }
-    
+
     @Test
     void whenFindNonExistingProduct_thenReturnNull() {
         // Arrange
         String productId = "NONEXISTENT";
-        
+
         when(mockStore.find(productId)).thenReturn(null);
-        
+
         // Act
         Product result = goodsService.find(productId);
-        
+
         // Assert
         assertNull(result);
     }
-    
+
     @Test
     void whenAddProduct_thenStoreAddProductIsCalled() throws DuplicateProductException {
         // Arrange
         Product mockProduct = Mockito.mock(Product.class);
-        
+
         // Act
         goodsService.addProduct(mockProduct);
-        
+
         // Assert
         Mockito.verify(mockStore).addProduct(mockProduct);
     }
-    
+
     @Test
     void whenAddDuplicateProduct_thenDuplicateProductExceptionIsThrown() throws DuplicateProductException {
         // Arrange
         Product mockProduct = Mockito.mock(Product.class);
         DuplicateProductException expectedException = new DuplicateProductException("P1");
-        
+
         doThrow(expectedException)
-               .when(mockStore).addProduct(mockProduct);
-        
+                .when(mockStore).addProduct(mockProduct);
+
         try {
             // Act
             goodsService.addProduct(mockProduct);
@@ -107,4 +107,4 @@ class GoodsServiceImplTest {
             assertNotNull(e);
         }
     }
-} 
+}

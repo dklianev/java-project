@@ -47,12 +47,12 @@ public class ReceiptTest {
         cashier = new Cashier("C1", "Test Cashier", 1000);
         customer = new Customer("CU1", "Test Customer", 200);
         fileService = new FileServiceImpl();
-        
+
         // Create cash desk and assign cashier
         cashDesk = new CashDesk();
         store.addCashier(cashier);
         store.addCashDesk(cashDesk);
-        
+
         try {
             store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
         } catch (Exception e) {
@@ -63,7 +63,7 @@ public class ReceiptTest {
     @Test
     void testReceiptCreationAndFields() {
         Receipt receipt = new Receipt(cashier);
-        
+
         assertEquals(cashier, receipt.getCashier(), "Receipt should have the correct cashier");
         assertNotNull(receipt.getTime(), "Receipt should have a timestamp");
         assertTrue(receipt.getNumber() > 0, "Receipt should have a positive receipt number");
@@ -75,10 +75,10 @@ public class ReceiptTest {
     void testReceiptAddItemAndTotal() {
         // Create a receipt and add items
         Receipt receipt = new Receipt(cashier);
-        
+
         // Add a product to the receipt
         receipt.add(new FoodProduct("F1", "Milk", 2.0, LocalDate.now().plusDays(10), 5), 2, 2.5);
-        
+
         // Check the receipt details
         assertEquals(1, receipt.getLines().size(), "Receipt should have one item");
         assertEquals(5.0, receipt.total(), 0.001, "Receipt total should be calculated correctly");
@@ -98,16 +98,16 @@ public class ReceiptTest {
             // Check receipt counts
             assertEquals(2, Receipt.getReceiptCount(), "Receipt counter should be incremented");
             assertEquals(2, store.listReceipts().size(), "Store should track all receipts");
-            
+
             // Validate the receipts
             assertNotNull(receipt1, "Receipt should be generated after sale");
             assertNotNull(receipt2, "Receipt should be generated after sale");
             assertEquals(cashier, receipt1.getCashier(), "Receipt should have the correct cashier");
             assertEquals(1, receipt1.getLines().size(), "Receipt should have one product line");
-            
-        } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException | 
-                InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException | 
-                IOException | CashDeskNotAssignedException e) {
+
+        } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
+                | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
+                | IOException | CashDeskNotAssignedException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -140,7 +140,7 @@ public class ReceiptTest {
 
             // Load receipts back
             Receipt loadedReceipt = fileService.load(tempDir, receipt1.getNumber());
-            
+
             assertNotNull(loadedReceipt, "Should be able to load saved receipt");
             assertEquals(receipt1.getNumber(), loadedReceipt.getNumber(), "Loaded receipt should have the same number");
             assertEquals(receipt1.getCashier().getId(), loadedReceipt.getCashier().getId(), "Loaded receipt should have the same cashier");
@@ -150,21 +150,21 @@ public class ReceiptTest {
             // Load all receipts
             List<Receipt> loadedReceipts = fileService.loadAll(tempDir);
             assertEquals(2, loadedReceipts.size(), "Should load all receipts from directory");
-            
-        } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException | 
-                InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException | 
-                IOException | CashDeskNotAssignedException | ClassNotFoundException e) {
+
+        } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
+                | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
+                | IOException | CashDeskNotAssignedException | ClassNotFoundException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
-    
+
     @Test
     void testReceiptToString() {
         Receipt receipt = new Receipt(cashier);
         receipt.add(new FoodProduct("F1", "Milk", 2.0, LocalDate.now().plusDays(10), 5), 2, 2.5);
-        
+
         String receiptString = receipt.toString();
-        
+
         assertNotNull(receiptString, "Receipt toString should not be null");
         assertTrue(receiptString.contains("RECEIPT #"), "Receipt should include receipt number");
         assertTrue(receiptString.contains("Date:"), "Receipt should include date");
@@ -172,4 +172,4 @@ public class ReceiptTest {
         assertTrue(receiptString.contains("Milk"), "Receipt should include product name");
         assertTrue(receiptString.contains("TOTAL:"), "Receipt should include total");
     }
-} 
+}
