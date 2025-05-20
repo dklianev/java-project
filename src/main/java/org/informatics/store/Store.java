@@ -162,6 +162,47 @@ public class Store {
         return r;
     }
 
+    public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
+            throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
+            InsufficientQuantityException, InsufficientBudgetException, IOException {
+        if (qty <= 0) {
+            throw new InvalidQuantityException(qty);
+        }
+        
+        Product p = inventory.get(productId);
+        if (p == null) {
+            throw new ProductNotFoundException(productId);
+        }
+        if (p.isExpired(LocalDate.now())) {
+            throw new ProductExpiredException(productId);
+        }
+        if (p.getQuantity() < qty) {
+            throw new InsufficientQuantityException(productId, qty, p.getQuantity());
+        }
+        double price = p.salePrice(cfg, LocalDate.now());
+        double totalPrice = price * qty;
+        cust.pay(totalPrice);
+        p.addQuantity(-qty);
+        Integer currentQty = soldItems.get(productId);
+        if (currentQty == null) {
+            soldItems.put(productId, qty);
+        } else {
+            soldItems.put(productId, currentQty + qty);
+        }
+        costOfSoldGoods += p.getPurchasePrice() * qty;
+        receipt.add(p, qty, price);
+        return receipt;
+    }
+
+    public Receipt createReceipt(Cashier cashier) throws CashDeskNotAssignedException {
+        getAssignedDeskForCashier(cashier.getId())
+                .orElseThrow(() -> new CashDeskNotAssignedException("Cashier " + cashier.getName() + " is not assigned to an open cash desk."));
+        
+        Receipt r = new Receipt(cashier);
+        receipts.add(r);
+        return r;
+    }
+
     public double turnover() {
         double total = 0.0;
         for (Receipt receipt : receipts) {

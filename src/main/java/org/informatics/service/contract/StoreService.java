@@ -18,6 +18,14 @@ public interface StoreService {
     Receipt sell(Cashier c, String id, int qty, Customer cust, File receiptDir)
             throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
             InsufficientQuantityException, InsufficientBudgetException, IOException, CashDeskNotAssignedException;
+    
+    Receipt createReceipt(Cashier c) throws CashDeskNotAssignedException;
+    
+    Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
+            throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
+            InsufficientQuantityException, InsufficientBudgetException, IOException;
+    
+    void saveReceipt(Receipt receipt, File receiptDir) throws IOException;
 
     double turnover();
 }

@@ -31,6 +31,24 @@ public class StoreServiceImpl implements StoreService {
         receipt.save(receiptDir);
         return receipt;
     }
+    
+    @Override
+    public Receipt createReceipt(Cashier c) throws CashDeskNotAssignedException {
+        return store.createReceipt(c);
+    }
+    
+    @Override
+    public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
+            throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
+            InsufficientQuantityException, InsufficientBudgetException, IOException {
+        Receipt updatedReceipt = store.addToReceipt(receipt, productId, qty, cust);
+        return updatedReceipt;
+    }
+    
+    @Override
+    public void saveReceipt(Receipt receipt, File receiptDir) throws IOException {
+        receipt.save(receiptDir);
+    }
 
     @Override
     public double turnover() {

@@ -301,9 +301,23 @@ public class StoreApplication {
 
         Customer customer = new Customer(customerId, customerName, customerBalance);
 
-        // 3. Add products to receipt
+        // 3. Create a single receipt for the entire purchase
+        Receipt currentReceipt;
+        try {
+            currentReceipt = storeService.createReceipt(selectedCashier);
+        } catch (CashDeskNotAssignedException e) {
+            System.err.println("Error: " + e.getMessage());
+            return;
+        }
+
+        // Ensure we have a valid receipt before continuing
+        if (currentReceipt == null) {
+            System.err.println("Failed to create receipt. Sale cancelled.");
+            return;
+        }
+
+        // 4. Add products to receipt
         boolean addMoreProducts = true;
-        Receipt currentReceiptForSale = null;
 
         while (addMoreProducts) {
             try {
@@ -312,12 +326,14 @@ public class StoreApplication {
 
                 if (productId.equalsIgnoreCase("done")) {
                     addMoreProducts = false;
-                    if (currentReceiptForSale != null) {
+                    // Save the final receipt once when done adding products
+                    try {
+                        storeService.saveReceipt(currentReceipt, receiptDir);
                         System.out.println("\n--- FINAL RECEIPT ---");
-                        System.out.println(currentReceiptForSale.toString());
+                        System.out.println(currentReceipt.toString());
                         System.out.println("---------------------");
-                    } else {
-                        System.out.println("No items added to the sale.");
+                    } catch (IOException e) {
+                        System.err.println("Error saving receipt: " + e.getMessage());
                     }
                     continue;
                 }
@@ -334,23 +350,17 @@ public class StoreApplication {
                     continue;
                 }
 
-                // Try to sell the product
-                Receipt r = storeService.sell(selectedCashier, productId, quantity, customer, receiptDir);
-
-                if (currentReceiptForSale == null) {
-                    currentReceiptForSale = r;
-                } else {
-                    currentReceiptForSale = r;
-                }
+                // Add to existing receipt
+                currentReceipt = storeService.addToReceipt(currentReceipt, productId, quantity, customer);
 
                 System.out.println("Product added successfully!");
-                System.out.println(r.toString());
+                System.out.println("Current receipt total: $" + currentReceipt.total());
 
             } catch (ProductNotFoundException | ProductExpiredException
                     | InvalidQuantityException | InsufficientQuantityException
-                    | InsufficientBudgetException | CashDeskNotAssignedException e) {
+                    | InsufficientBudgetException e) {
                 System.err.println("Sale Error: " + e.getMessage());
-                if (e instanceof InsufficientBudgetException || e instanceof CashDeskNotAssignedException) {
+                if (e instanceof InsufficientBudgetException) {
                     addMoreProducts = false;
                 }
             } catch (IOException e) {
