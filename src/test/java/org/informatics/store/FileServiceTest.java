@@ -1,34 +1,103 @@
 package org.informatics.store;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.informatics.config.StoreConfig;
+import org.informatics.entity.CashDesk;
 import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
 import org.informatics.entity.NonFoodProduct;
 import org.informatics.entity.Product;
 import org.informatics.entity.Receipt;
+import org.informatics.exception.CashDeskNotAssignedException;
+import org.informatics.exception.DuplicateProductException;
+import org.informatics.exception.InsufficientBudgetException;
+import org.informatics.exception.InsufficientQuantityException;
+import org.informatics.exception.InvalidQuantityException;
+import org.informatics.exception.ProductExpiredException;
+import org.informatics.exception.ProductNotFoundException;
 import org.informatics.service.impl.FileServiceImpl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 public class FileServiceTest {
+    
+    private Store store;
+    private Cashier cashier;
+    private Customer customer;
+    private FileServiceImpl fileService;
+    private CashDesk cashDesk;
+    
     @TempDir
     File tempDir;
+    
+    @BeforeEach
+    public void setUp() {
+        StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
+        store = new Store(config);
+        cashier = new Cashier("C1", "Bob", 1000);
+        customer = new Customer("CU1", "Ann", 100);
+        fileService = new FileServiceImpl();
+        
+        // Create cash desk and assign cashier
+        cashDesk = new CashDesk();
+        store.addCashier(cashier);
+        store.addCashDesk(cashDesk);
+        
+        try {
+            store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
+        } catch (Exception e) {
+            fail("Failed to set up test environment: " + e.getMessage());
+        }
+    }
 
     @Test
-    void saveAndLoadReceipt() throws Exception {
-        FileServiceImpl fs = new FileServiceImpl();
-        Store store = new Store(new StoreConfig(0.2, 0.25, 3, 0.3));
-        Cashier c = new Cashier("C", "Bob", 1000);
-        store.addCashier(c);
-        Product p = new NonFoodProduct("N", "Notebook", 1, LocalDate.MAX, 5);
-        store.addProduct(p);
-        Customer cust = new Customer("CU", "Ann", 10);
-        Receipt r = store.sell(c, "N", 1, cust);
-        fs.save(r, tempDir);
-        assertEquals(1, fs.loadAll(tempDir).size());
+    void testSaveAndLoadReceipt() {
+        try {
+            // Setup product and receipt
+            Product notebook = new NonFoodProduct("N1", "Notebook", 1, LocalDate.MAX, 5);
+            store.addProduct(notebook);
+            
+            // Generate a receipt by selling the product
+            Receipt receipt = store.sell(cashier, "N1", 1, customer);
+            
+            // Save the receipt
+            fileService.save(receipt, tempDir);
+            
+            // Verify loading all receipts returns the correct amount
+            List<Receipt> loadedReceipts = fileService.loadAll(tempDir);
+            assertEquals(1, loadedReceipts.size(), "Should load 1 receipt from the directory");
+            
+            // Verify loading specific receipt
+            Receipt loadedReceipt = fileService.load(tempDir, receipt.getNumber());
+            assertNotNull(loadedReceipt, "Should be able to load the saved receipt");
+            assertEquals(receipt.getNumber(), loadedReceipt.getNumber(), "Receipt number should match");
+            
+        } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException | 
+                InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException | 
+                IOException | CashDeskNotAssignedException | ClassNotFoundException e) {
+            fail("Test failed with exception: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    void testLoadingNonExistentReceipt() {
+        try {
+            // Attempt to load a receipt that doesn't exist
+            Receipt nonExistentReceipt = fileService.load(tempDir, 999);
+            
+            // Should return null if receipt not found
+            assertEquals(null, nonExistentReceipt, "Should return null for non-existent receipt");
+            
+        } catch (IOException | ClassNotFoundException e) {
+            fail("Test failed with exception: " + e.getMessage());
+        }
     }
 }

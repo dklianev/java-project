@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 import org.informatics.config.StoreConfig;
+import org.informatics.entity.CashDesk;
 import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
 import org.informatics.entity.FoodProduct;
@@ -16,142 +17,153 @@ import org.informatics.exception.InvalidQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
 import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ExceptionTest {
     
-    @Test
-    void testProductNotFound() {
-        // Initialization
+    private Store store;
+    private Cashier cashier;
+    private Customer customer;
+    
+    @BeforeEach
+    public void setUp() {
         StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
-        Store store = new Store(config);
-        Cashier cashier = new Cashier("C1", "Test Cashier", 1000);
-        Customer customer = new Customer("CU1", "Test Customer", 100);
+        store = new Store(config);
+        cashier = new Cashier("C1", "Test Cashier", 1000);
+        customer = new Customer("CU1", "Test Customer", 100);
         store.addCashier(cashier);
         
+        // Create cash desk and assign cashier to allow selling
+        CashDesk desk = new CashDesk();
+        store.addCashDesk(desk);
+        try {
+            store.assignCashierToDesk(cashier.getId(), desk.getId());
+        } catch (Exception e) {
+            fail("Failed to set up test environment: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    void testShouldThrowProductNotFoundException() {
         try {
             store.sell(cashier, "INVALID_ID", 1, customer);
             fail("Expected ProductNotFoundException was not thrown");
         } catch (ProductNotFoundException ex) {
             // Test passed - expected exception
-        } catch (ProductExpiredException | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (ProductExpiredException | InvalidQuantityException | InsufficientQuantityException | 
+                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
     
     @Test
-    void testInvalidQuantity() {
-        // Инициализация
-        StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
-        Store store = new Store(config);
-        Cashier cashier = new Cashier("C1", "Test Cashier", 1000);
-        Customer customer = new Customer("CU1", "Test Customer", 100);
-        store.addCashier(cashier);
-        
+    void testShouldThrowInvalidQuantityExceptionForZeroQuantity() {
         try {
             store.addProduct(new FoodProduct("P1", "Milk", 2.0, LocalDate.now().plusDays(5), 10));
-        } catch (DuplicateProductException ex) {
-            fail("Should not throw exception when adding a new product");
-        }
-        
-        // Test zero quantity
-        try {
             store.sell(cashier, "P1", 0, customer);
             fail("Expected InvalidQuantityException was not thrown for zero quantity");
         } catch (InvalidQuantityException ex) {
             // Test passed - expected exception
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (DuplicateProductException ex) {
+            fail("Unexpected exception when adding product: " + ex.getMessage());
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException | 
+                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
-        
-        // Test negative quantity
+    }
+    
+    @Test
+    void testShouldThrowInvalidQuantityExceptionForNegativeQuantity() {
         try {
+            store.addProduct(new FoodProduct("P1", "Milk", 2.0, LocalDate.now().plusDays(5), 10));
             store.sell(cashier, "P1", -1, customer);
             fail("Expected InvalidQuantityException was not thrown for negative quantity");
         } catch (InvalidQuantityException ex) {
             // Test passed - expected exception
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (DuplicateProductException ex) {
+            fail("Unexpected exception when adding product: " + ex.getMessage());
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException | 
+                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
     
     @Test
-    void testInsufficientQuantity() throws DuplicateProductException {
-        // Инициализация
-        StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
-        Store store = new Store(config);
-        Cashier cashier = new Cashier("C1", "Test Cashier", 1000);
-        Customer customer = new Customer("CU1", "Test Customer", 100);
-        store.addCashier(cashier);
-        
-        store.addProduct(new FoodProduct("P1", "Milk", 2.0, LocalDate.now().plusDays(5), 5));
-        
+    void testShouldThrowInsufficientQuantityException() {
         try {
+            store.addProduct(new FoodProduct("P1", "Milk", 2.0, LocalDate.now().plusDays(5), 5));
             store.sell(cashier, "P1", 10, customer);
             fail("Expected InsufficientQuantityException was not thrown");
         } catch (InsufficientQuantityException ex) {
             // Test passed - expected exception
-        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (DuplicateProductException ex) {
+            fail("Unexpected exception when adding product: " + ex.getMessage());
+        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | 
+                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
     
     @Test
-    void testExpiredProduct() throws DuplicateProductException {
-        // Инициализация
-        StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
-        Store store = new Store(config);
-        Cashier cashier = new Cashier("C1", "Test Cashier", 1000);
-        Customer customer = new Customer("CU1", "Test Customer", 100);
-        store.addCashier(cashier);
-        
-        // Add product that is already expired
-        store.addProduct(new FoodProduct("P1", "Expired Milk", 2.0, LocalDate.now().minusDays(1), 5));
-        
+    void testShouldThrowProductExpiredException() {
         try {
+            store.addProduct(new FoodProduct("P1", "Expired Milk", 2.0, LocalDate.now().minusDays(1), 5));
             store.sell(cashier, "P1", 1, customer);
             fail("Expected ProductExpiredException was not thrown");
         } catch (ProductExpiredException ex) {
             // Test passed - expected exception
-        } catch (ProductNotFoundException | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
+        } catch (DuplicateProductException ex) {
+            fail("Unexpected exception when adding product: " + ex.getMessage());
+        } catch (ProductNotFoundException | InvalidQuantityException | InsufficientQuantityException | 
+                InsufficientBudgetException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
     
     @Test
-    void testInsufficientBudget() throws DuplicateProductException {
-        // Инициализация
-        StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
-        Store store = new Store(config);
-        Cashier cashier = new Cashier("C1", "Test Cashier", 1000);
-        store.addCashier(cashier);
-        
-        store.addProduct(new NonFoodProduct("P1", "Expensive Item", 50.0, LocalDate.MAX, 5));
-        Customer poorCustomer = new Customer("CU2", "Poor Customer", 10.0);
-        
+    void testShouldThrowInsufficientBudgetException() {
         try {
+            store.addProduct(new NonFoodProduct("P1", "Expensive Item", 50.0, LocalDate.MAX, 5));
+            Customer poorCustomer = new Customer("CU2", "Poor Customer", 10.0);
             store.sell(cashier, "P1", 1, poorCustomer);
             fail("Expected InsufficientBudgetException was not thrown");
         } catch (InsufficientBudgetException ex) {
             // Test passed - expected exception
-        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | InsufficientQuantityException | IOException | CashDeskNotAssignedException ex) {
+        } catch (DuplicateProductException ex) {
+            fail("Unexpected exception when adding product: " + ex.getMessage());
+        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | 
+                InsufficientQuantityException | IOException | CashDeskNotAssignedException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
     
     @Test
-    void testDuplicateProduct() throws DuplicateProductException {
-        // Инициализация
-        StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
-        Store store = new Store(config);
-        
-        store.addProduct(new FoodProduct("P1", "Milk", 2.0, LocalDate.now().plusDays(5), 5));
-        
+    void testShouldThrowDuplicateProductException() {
         try {
+            store.addProduct(new FoodProduct("P1", "Milk", 2.0, LocalDate.now().plusDays(5), 5));
             store.addProduct(new FoodProduct("P1", "Another Product", 3.0, LocalDate.now().plusDays(10), 3));
             fail("Expected DuplicateProductException was not thrown");
         } catch (DuplicateProductException ex) {
             // Test passed - expected exception
+        }
+    }
+    
+    @Test
+    void testShouldThrowCashDeskNotAssignedException() {
+        try {
+            Cashier unassignedCashier = new Cashier("C2", "Unassigned Cashier", 1000);
+            store.addCashier(unassignedCashier);
+            store.addProduct(new FoodProduct("P1", "Milk", 2.0, LocalDate.now().plusDays(5), 10));
+            store.sell(unassignedCashier, "P1", 1, customer);
+            fail("Expected CashDeskNotAssignedException was not thrown");
+        } catch (CashDeskNotAssignedException ex) {
+            // Test passed - expected exception
+        } catch (DuplicateProductException ex) {
+            fail("Unexpected exception when adding product: " + ex.getMessage());
+        } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | 
+                InsufficientQuantityException | InsufficientBudgetException | IOException ex) {
+            fail("Unexpected exception: " + ex.getMessage());
         }
     }
 }
