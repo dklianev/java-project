@@ -42,6 +42,9 @@ public class ReceiptTest {
 
     @BeforeEach
     public void setUp() {
+        // Reset the receipt counter before each test
+        Receipt.resetCounter();
+        
         // Common setup for all tests
         StoreConfig config = new StoreConfig(
             new BigDecimal("0.20"), 

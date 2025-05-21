@@ -71,6 +71,10 @@ public class Receipt implements Serializable {
     public static int getReceiptCount() {
         return COUNTER;
     }
+    
+    public static void resetCounter() {
+        COUNTER = 0;
+    }
 
 
      //Saves this receipt as both a .txt and a .ser file under the given directory.
