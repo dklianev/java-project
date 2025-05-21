@@ -42,8 +42,7 @@ public class StoreServiceImpl implements StoreService {
     public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
             InsufficientQuantityException, InsufficientBudgetException, IOException {
-        Receipt updatedReceipt = store.addToReceipt(receipt, productId, qty, cust);
-        return updatedReceipt;
+        return store.addToReceipt(receipt, productId, qty, cust);
     }
     
     @Override

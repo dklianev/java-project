@@ -167,7 +167,7 @@ public class Store {
 
     public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException {
+            InsufficientQuantityException, InsufficientBudgetException {
         if (qty <= 0) {
             throw new InvalidQuantityException(qty);
         }

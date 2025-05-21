@@ -12,11 +12,10 @@ import org.informatics.entity.Product;
 import org.informatics.exception.DuplicateProductException;
 import org.informatics.service.impl.CashdeskServiceImpl;
 import org.informatics.service.impl.GoodsServiceImpl;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceLayerTest {
 
@@ -111,7 +110,7 @@ public class ServiceLayerTest {
             cashDeskService.releaseCashierFromDesk(desk.getId());
 
             // Verify release
-            assertEquals(false, desk.isOccupied(), "Desk should not be occupied after release");
+            assertFalse(desk.isOccupied(), "Desk should not be occupied after release");
 
         } catch (Exception e) {
             fail("Test failed with exception: " + e.getMessage());

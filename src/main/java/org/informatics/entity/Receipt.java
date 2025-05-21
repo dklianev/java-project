@@ -1,11 +1,6 @@
 package org.informatics.entity;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
+import java.io.*;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -14,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Receipt implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     private static int COUNTER = 0;
     private final int number = ++COUNTER;
@@ -38,11 +34,7 @@ public class Receipt implements Serializable {
     }
 
     public List<Line> getLines() {
-        List<Line> result = new ArrayList<>();
-        for (Line line : lines) {
-            result.add(line);
-        }
-        return result;
+        return new ArrayList<>(lines);
     }
 
     public void add(Product product, int quantity, BigDecimal price) {
@@ -62,7 +54,7 @@ public class Receipt implements Serializable {
     public BigDecimal total() {
         BigDecimal sum = BigDecimal.ZERO;
         for (Line line : lines) {
-            BigDecimal lineTotal = line.getPrice().multiply(BigDecimal.valueOf(line.getQuantity()));
+            BigDecimal lineTotal = line.price().multiply(BigDecimal.valueOf(line.quantity()));
             sum = sum.add(lineTotal);
         }
         return sum;
@@ -83,7 +75,7 @@ public class Receipt implements Serializable {
 
         try ( // 1) write human-readable text file
                 PrintWriter pw = new PrintWriter(new File(dir, "receipt-" + number + ".txt"))) {
-            pw.print(this.toString());
+            pw.print(this);
         }
 
         try ( // 2) write serialized object
@@ -107,11 +99,11 @@ public class Receipt implements Serializable {
         sb.append("ITEMS:\n");
         
         for (Line line : lines) {
-            BigDecimal lineTotal = line.getPrice().multiply(BigDecimal.valueOf(line.getQuantity()));
+            BigDecimal lineTotal = line.price().multiply(BigDecimal.valueOf(line.quantity()));
             sb.append(String.format("%-20s %3d x %7.2f = %8.2f\n", 
-                    line.getProduct().getName(), 
-                    line.getQuantity(), 
-                    line.getPrice().doubleValue(), 
+                    line.product().getName(),
+                    line.quantity(),
+                    line.price().doubleValue(),
                     lineTotal.doubleValue()));
         }
         
@@ -120,28 +112,8 @@ public class Receipt implements Serializable {
         return sb.toString();
     }
 
-    public static class Line implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private final Product product;
-        private final int quantity;
-        private final BigDecimal price;
-
-        public Line(Product product, int quantity, BigDecimal price) {
-            this.product = product;
-            this.quantity = quantity;
-            this.price = price;
-        }
-
-        public Product getProduct() {
-            return product;
-        }
-
-        public int getQuantity() {
-            return quantity;
-        }
-
-        public BigDecimal getPrice() {
-            return price;
-        }
+    public record Line(Product product, int quantity, BigDecimal price) implements Serializable {
+            @Serial
+            private static final long serialVersionUID = 1L;
     }
 }

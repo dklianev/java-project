@@ -1,10 +1,12 @@
 package org.informatics.entity;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.informatics.exception.CashDeskOccupiedException;
 
 public class CashDesk implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     private static int nextId = 1;
 

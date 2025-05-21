@@ -37,9 +37,7 @@ public class FileServiceImpl implements FileService {
                             list.add(receipt);
                         }
                     }
-                } catch (InvalidClassException e) {
-                    System.err.println("Could not deserialize file: " + file.getName() + " - " + e.getMessage());
-                } catch (ClassNotFoundException e) {
+                } catch (InvalidClassException | ClassNotFoundException e) {
                     System.err.println("Could not deserialize file: " + file.getName() + " - " + e.getMessage());
                 }
             }

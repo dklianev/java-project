@@ -1,5 +1,6 @@
 package org.informatics.entity;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -8,7 +9,7 @@ import org.informatics.config.StoreConfig;
 import org.informatics.util.GoodsType;
 
 public class Product implements Serializable, Comparable<Product> {
-
+    @Serial
     private static final long serialVersionUID = 1L;
     private final String id;
     private final String name;

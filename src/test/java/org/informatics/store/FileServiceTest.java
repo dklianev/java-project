@@ -21,12 +21,11 @@ import org.informatics.exception.InvalidQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
 import org.informatics.service.impl.FileServiceImpl;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FileServiceTest {
 
@@ -99,7 +98,7 @@ public class FileServiceTest {
             Receipt nonExistentReceipt = fileService.load(tempDir, 999);
 
             // Should return null if receipt not found
-            assertEquals(null, nonExistentReceipt, "Should return null for non-existent receipt");
+            assertNull(nonExistentReceipt, "Should return null for non-existent receipt");
 
         } catch (IOException | ClassNotFoundException e) {
             fail("Test failed with exception: " + e.getMessage());
