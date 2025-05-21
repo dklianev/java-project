@@ -1,24 +1,26 @@
 package org.informatics.entity;
 
+import java.math.BigDecimal;
+
 import org.informatics.exception.InsufficientBudgetException;
 
 public class Customer extends Person {
 
-    private double balance;
+    private BigDecimal balance;
 
-    public Customer(String id, String name, double balance) {
+    public Customer(String id, String name, BigDecimal balance) {
         super(id, name);
         this.balance = balance;
     }
 
-    public void pay(double amt) throws InsufficientBudgetException {
-        if (balance < amt) {
-            throw new InsufficientBudgetException(amt - balance);
+    public void pay(BigDecimal amt) throws InsufficientBudgetException {
+        if (balance.compareTo(amt) < 0) {
+            throw new InsufficientBudgetException(amt.subtract(balance));
         }
-        balance -= amt;
+        balance = balance.subtract(amt);
     }
 
-    public double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 }

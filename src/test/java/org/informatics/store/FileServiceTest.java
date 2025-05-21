@@ -2,6 +2,7 @@ package org.informatics.store;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -40,10 +41,15 @@ public class FileServiceTest {
 
     @BeforeEach
     public void setUp() {
-        StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
+        StoreConfig config = new StoreConfig(
+            new BigDecimal("0.20"), 
+            new BigDecimal("0.25"), 
+            3, 
+            new BigDecimal("0.30")
+        );
         store = new Store(config);
-        cashier = new Cashier("C1", "Bob", 1000);
-        customer = new Customer("CU1", "Ann", 100);
+        cashier = new Cashier("C1", "Bob", new BigDecimal("1000"));
+        customer = new Customer("CU1", "Ann", new BigDecimal("100"));
         fileService = new FileServiceImpl();
 
         // Create cash desk and assign cashier
@@ -62,7 +68,7 @@ public class FileServiceTest {
     void testSaveAndLoadReceipt() {
         try {
             // Setup product and receipt
-            Product notebook = new NonFoodProduct("N1", "Notebook", 1, LocalDate.MAX, 5);
+            Product notebook = new NonFoodProduct("N1", "Notebook", new BigDecimal("1"), LocalDate.MAX, 5);
             store.addProduct(notebook);
 
             // Generate a receipt by selling the product

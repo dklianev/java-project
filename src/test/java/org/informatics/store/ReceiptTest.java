@@ -2,6 +2,7 @@ package org.informatics.store;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -42,10 +43,15 @@ public class ReceiptTest {
     @BeforeEach
     public void setUp() {
         // Common setup for all tests
-        StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
+        StoreConfig config = new StoreConfig(
+            new BigDecimal("0.20"), 
+            new BigDecimal("0.25"), 
+            3, 
+            new BigDecimal("0.30")
+        );
         store = new Store(config);
-        cashier = new Cashier("C1", "Test Cashier", 1000);
-        customer = new Customer("CU1", "Test Customer", 200);
+        cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
+        customer = new Customer("CU1", "Test Customer", new BigDecimal("200"));
         fileService = new FileServiceImpl();
 
         // Create cash desk and assign cashier
@@ -68,7 +74,7 @@ public class ReceiptTest {
         assertNotNull(receipt.getTime(), "Receipt should have a timestamp");
         assertTrue(receipt.getNumber() > 0, "Receipt should have a positive receipt number");
         assertEquals(0, receipt.getLines().size(), "New receipt should have no items");
-        assertEquals(0.0, receipt.total(), 0.001, "New receipt should have zero total");
+        assertEquals(BigDecimal.ZERO, receipt.total(), "New receipt should have zero total");
     }
 
     @Test
@@ -77,19 +83,20 @@ public class ReceiptTest {
         Receipt receipt = new Receipt(cashier);
 
         // Add a product to the receipt
-        receipt.add(new FoodProduct("F1", "Milk", 2.0, LocalDate.now().plusDays(10), 5), 2, 2.5);
+        BigDecimal price = new BigDecimal("2.50");
+        receipt.add(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 5), 2, price);
 
         // Check the receipt details
         assertEquals(1, receipt.getLines().size(), "Receipt should have one item");
-        assertEquals(5.0, receipt.total(), 0.001, "Receipt total should be calculated correctly");
+        assertEquals(price.multiply(new BigDecimal("2")), receipt.total(), "Receipt total should be calculated correctly");
     }
 
     @Test
     void testReceiptGenerationAfterSale() {
         try {
             // Add products to the store
-            store.addProduct(new FoodProduct("F1", "Milk", 2.0, LocalDate.now().plusDays(10), 10));
-            store.addProduct(new NonFoodProduct("N1", "Soap", 3.0, LocalDate.now().plusYears(1), 5));
+            store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 10));
+            store.addProduct(new NonFoodProduct("N1", "Soap", new BigDecimal("3.0"), LocalDate.now().plusYears(1), 5));
 
             // Sell products and get the receipt
             Receipt receipt1 = store.sell(cashier, "F1", 2, customer);
@@ -116,8 +123,8 @@ public class ReceiptTest {
     void testReceiptSaveAndLoad() {
         try {
             // Add products to store
-            store.addProduct(new FoodProduct("F1", "Milk", 2.0, LocalDate.now().plusDays(10), 10));
-            store.addProduct(new NonFoodProduct("N1", "Soap", 3.0, LocalDate.now().plusYears(1), 5));
+            store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 10));
+            store.addProduct(new NonFoodProduct("N1", "Soap", new BigDecimal("3.0"), LocalDate.now().plusYears(1), 5));
 
             // Make sales and get receipts
             Receipt receipt1 = store.sell(cashier, "F1", 2, customer);
@@ -145,7 +152,7 @@ public class ReceiptTest {
             assertEquals(receipt1.getNumber(), loadedReceipt.getNumber(), "Loaded receipt should have the same number");
             assertEquals(receipt1.getCashier().getId(), loadedReceipt.getCashier().getId(), "Loaded receipt should have the same cashier");
             assertEquals(receipt1.getLines().size(), loadedReceipt.getLines().size(), "Loaded receipt should have the same number of items");
-            assertEquals(receipt1.total(), loadedReceipt.total(), 0.001, "Loaded receipt should have the same total");
+            assertEquals(receipt1.total(), loadedReceipt.total(), "Loaded receipt should have the same total");
 
             // Load all receipts
             List<Receipt> loadedReceipts = fileService.loadAll(tempDir);
@@ -161,7 +168,7 @@ public class ReceiptTest {
     @Test
     void testReceiptToString() {
         Receipt receipt = new Receipt(cashier);
-        receipt.add(new FoodProduct("F1", "Milk", 2.0, LocalDate.now().plusDays(10), 5), 2, 2.5);
+        receipt.add(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 5), 2, new BigDecimal("2.50"));
 
         String receiptString = receipt.toString();
 

@@ -1,6 +1,7 @@
 package org.informatics.store;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,8 +32,8 @@ public class Store {
     private final List<Cashier> cashiers = new ArrayList<>();
     private final List<CashDesk> cashDesks = new ArrayList<>();
     private final Map<String, Integer> soldItems = new HashMap<>();
-    private double costOfSoldGoods = 0.0;
-    private double totalCostOfAllGoodsSupplied = 0.0;
+    private BigDecimal costOfSoldGoods = BigDecimal.ZERO;
+    private BigDecimal totalCostOfAllGoodsSupplied = BigDecimal.ZERO;
 
     public Store(StoreConfig cfg) {
         this.cfg = cfg;
@@ -106,7 +107,8 @@ public class Store {
             throw new DuplicateProductException(p.getId());
         }
         inventory.put(p.getId(), p);
-        totalCostOfAllGoodsSupplied += p.getPurchasePrice() * p.getQuantity();
+        totalCostOfAllGoodsSupplied = totalCostOfAllGoodsSupplied.add(
+                p.getPurchasePrice().multiply(BigDecimal.valueOf(p.getQuantity())));
     }
 
     public Product find(String id) {
@@ -145,8 +147,8 @@ public class Store {
         if (p.getQuantity() < qty) {
             throw new InsufficientQuantityException(productId, qty, p.getQuantity());
         }
-        double price = p.salePrice(cfg, LocalDate.now());
-        double totalPrice = price * qty;
+        BigDecimal price = p.salePrice(cfg, LocalDate.now());
+        BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(qty));
         cust.pay(totalPrice);
         p.addQuantity(-qty);
         Integer currentQty = soldItems.get(productId);
@@ -155,7 +157,8 @@ public class Store {
         } else {
             soldItems.put(productId, currentQty + qty);
         }
-        costOfSoldGoods += p.getPurchasePrice() * qty;
+        costOfSoldGoods = costOfSoldGoods.add(
+                p.getPurchasePrice().multiply(BigDecimal.valueOf(qty)));
         Receipt r = new Receipt(cashier);
         r.add(p, qty, price);
         receipts.add(r);
@@ -179,8 +182,8 @@ public class Store {
         if (p.getQuantity() < qty) {
             throw new InsufficientQuantityException(productId, qty, p.getQuantity());
         }
-        double price = p.salePrice(cfg, LocalDate.now());
-        double totalPrice = price * qty;
+        BigDecimal price = p.salePrice(cfg, LocalDate.now());
+        BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(qty));
         cust.pay(totalPrice);
         p.addQuantity(-qty);
         Integer currentQty = soldItems.get(productId);
@@ -189,7 +192,8 @@ public class Store {
         } else {
             soldItems.put(productId, currentQty + qty);
         }
-        costOfSoldGoods += p.getPurchasePrice() * qty;
+        costOfSoldGoods = costOfSoldGoods.add(
+                p.getPurchasePrice().multiply(BigDecimal.valueOf(qty)));
         receipt.add(p, qty, price);
         return receipt;
     }
@@ -203,10 +207,10 @@ public class Store {
         return r;
     }
 
-    public double turnover() {
-        double total = 0.0;
+    public BigDecimal turnover() {
+        BigDecimal total = BigDecimal.ZERO;
         for (Receipt receipt : receipts) {
-            total += receipt.total();
+            total = total.add(receipt.total());
         }
         return total;
     }
@@ -215,24 +219,24 @@ public class Store {
         return new HashMap<>(soldItems);
     }
 
-    public double salaryExpenses() {
-        double total = 0.0;
+    public BigDecimal salaryExpenses() {
+        BigDecimal total = BigDecimal.ZERO;
         for (Cashier cashier : cashiers) {
-            total += cashier.getMonthlySalary();
+            total = total.add(cashier.getMonthlySalary());
         }
         return total;
     }
 
-    public double costOfSoldGoods() {
+    public BigDecimal costOfSoldGoods() {
         return costOfSoldGoods;
     }
 
-    public double getTotalCostOfAllGoodsSupplied() {
+    public BigDecimal getTotalCostOfAllGoodsSupplied() {
         return totalCostOfAllGoodsSupplied;
     }
 
-    public double profit() {
-        return turnover() - salaryExpenses() - costOfSoldGoods;
+    public BigDecimal profit() {
+        return turnover().subtract(salaryExpenses()).subtract(costOfSoldGoods);
     }
 
     public int getReceiptCount() {

@@ -1,6 +1,7 @@
 package org.informatics.entity;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.informatics.config.StoreConfig;
@@ -11,12 +12,12 @@ public class Product implements Serializable, Comparable<Product> {
     private static final long serialVersionUID = 1L;
     private final String id;
     private final String name;
-    private final double purchasePrice;
+    private final BigDecimal purchasePrice;
     private final GoodsType type;
     private final LocalDate expiry;
     private int qty;
 
-    public Product(String id, String name, double price, GoodsType type, LocalDate exp, int qty) {
+    public Product(String id, String name, BigDecimal price, GoodsType type, LocalDate exp, int qty) {
         this.id = id;
         this.name = name;
         this.purchasePrice = price;
@@ -33,7 +34,7 @@ public class Product implements Serializable, Comparable<Product> {
         return name;
     }
 
-    public double getPurchasePrice() {
+    public BigDecimal getPurchasePrice() {
         return purchasePrice;
     }
 
@@ -57,13 +58,17 @@ public class Product implements Serializable, Comparable<Product> {
         return !expiry.isAfter(today);
     }
 
-    public double salePrice(StoreConfig cfg, LocalDate today) {
-        double markup = type == GoodsType.GROCERIES ? cfg.groceriesMarkup() : cfg.nonFoodsMarkup();
-        double price = purchasePrice * (1 + markup);
+    public BigDecimal salePrice(StoreConfig cfg, LocalDate today) {
+        BigDecimal markup = type == GoodsType.GROCERIES ? 
+                cfg.groceriesMarkup() : cfg.nonFoodsMarkup();
+        
+        BigDecimal price = purchasePrice.multiply(
+                BigDecimal.ONE.add(markup));
 
         if (!isExpired(today)
                 && expiry.minusDays(cfg.daysForNearExpiryDiscount()).isBefore(today)) {
-            price *= (1 - cfg.discountPercentage());
+            price = price.multiply(
+                    BigDecimal.ONE.subtract(cfg.discountPercentage()));
         }
 
         return price;

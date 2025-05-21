@@ -2,6 +2,7 @@ package org.informatics.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -44,10 +45,10 @@ public class StoreApplication {
     public StoreApplication() {
         // Initialize store with configuration
         StoreConfig config = new StoreConfig(
-                0.2, // 20% markup for groceries
-                0.25, // 25% markup for non-food items
+                new BigDecimal("0.20"), // 20% markup for groceries
+                new BigDecimal("0.25"), // 25% markup for non-food items
                 5, // 5 days before expiry for discount
-                0.3 // 30% discount for near-expiry items
+                new BigDecimal("0.30") // 30% discount for near-expiry items
         );
 
         store = new Store(config);
@@ -92,9 +93,9 @@ public class StoreApplication {
     private void initializeStore() {
         // Add cashiers
         try {
-            cashDeskService.addCashier(new Cashier("C1", "John Smith", 1200));
-            cashDeskService.addCashier(new Cashier("C2", "Mary Johnson", 1150));
-            cashDeskService.addCashier(new Cashier("C3", "Peter Brown", 1100));
+            cashDeskService.addCashier(new Cashier("C1", "John Smith", new BigDecimal("1200")));
+            cashDeskService.addCashier(new Cashier("C2", "Mary Johnson", new BigDecimal("1150")));
+            cashDeskService.addCashier(new Cashier("C3", "Peter Brown", new BigDecimal("1100")));
 
             // Add Cash Desks
             cashDeskService.addCashDesk(new CashDesk());
@@ -105,19 +106,19 @@ public class StoreApplication {
             LocalDate today = LocalDate.now();
 
             // Food products
-            goodsService.addProduct(new FoodProduct("F1", "Milk", 1.5, today.plusDays(10), 50));
-            goodsService.addProduct(new FoodProduct("F2", "Bread", 1.0, today.plusDays(3), 40));
-            goodsService.addProduct(new FoodProduct("F3", "Eggs", 2.5, today.plusDays(15), 30));
-            goodsService.addProduct(new FoodProduct("F4", "Cheese", 3.5, today.plusDays(20), 25));
-            goodsService.addProduct(new FoodProduct("F5", "Yogurt", 1.2, today.plusDays(4), 35));
+            goodsService.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("1.5"), today.plusDays(10), 50));
+            goodsService.addProduct(new FoodProduct("F2", "Bread", new BigDecimal("1.0"), today.plusDays(3), 40));
+            goodsService.addProduct(new FoodProduct("F3", "Eggs", new BigDecimal("2.5"), today.plusDays(15), 30));
+            goodsService.addProduct(new FoodProduct("F4", "Cheese", new BigDecimal("3.5"), today.plusDays(20), 25));
+            goodsService.addProduct(new FoodProduct("F5", "Yogurt", new BigDecimal("1.2"), today.plusDays(4), 35));
 
             // Near expiry product
-            goodsService.addProduct(new FoodProduct("F6", "Tomatoes", 2.0, today.plusDays(2), 15));
+            goodsService.addProduct(new FoodProduct("F6", "Tomatoes", new BigDecimal("2.0"), today.plusDays(2), 15));
 
             // Non-food products
-            goodsService.addProduct(new NonFoodProduct("N1", "Soap", 1.8, today.plusYears(1), 40));
-            goodsService.addProduct(new NonFoodProduct("N2", "Toothpaste", 2.2, today.plusYears(2), 30));
-            goodsService.addProduct(new NonFoodProduct("N3", "Shampoo", 4.0, today.plusYears(1), 20));
+            goodsService.addProduct(new NonFoodProduct("N1", "Soap", new BigDecimal("1.8"), today.plusYears(1), 40));
+            goodsService.addProduct(new NonFoodProduct("N2", "Toothpaste", new BigDecimal("2.2"), today.plusYears(2), 30));
+            goodsService.addProduct(new NonFoodProduct("N3", "Shampoo", new BigDecimal("4.0"), today.plusYears(1), 20));
 
             System.out.println("Store initialized with sample data.");
         } catch (DuplicateProductException e) {
@@ -183,13 +184,13 @@ public class StoreApplication {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         for (Product p : products) {
-            double salePrice = p.salePrice(store.getConfig(), today);
+            BigDecimal salePrice = p.salePrice(store.getConfig(), today);
             String type = p.getType().toString();
             System.out.printf("%-5s %-20s %-10s $%-11.2f %-10s %-10d\n",
                     p.getId(),
                     p.getName(),
                     type,
-                    salePrice,
+                    salePrice.doubleValue(),
                     p.getExpiry().format(formatter),
                     p.getQuantity());
         }
@@ -210,7 +211,7 @@ public class StoreApplication {
         for (Cashier c : cashiers) {
             Optional<CashDesk> assignedDesk = cashDeskService.getAssignedDeskForCashier(c.getId());
             String deskInfo = assignedDesk.map(CashDesk::getId).orElse("None");
-            System.out.printf("%-5s %-20s $%-14.2f %-15s\n", c.getId(), c.getName(), c.getMonthlySalary(), deskInfo);
+            System.out.printf("%-5s %-20s $%-14.2f %-15s\n", c.getId(), c.getName(), c.getMonthlySalary().doubleValue(), deskInfo);
         }
     }
 
@@ -297,7 +298,7 @@ public class StoreApplication {
         // 2. Create customer
         String customerId = "CU" + System.currentTimeMillis() % 10000;
         String customerName = getStringInput("Enter customer name: ");
-        double customerBalance = getDoubleInput("Enter customer balance: $");
+        BigDecimal customerBalance = getBigDecimalInput("Enter customer balance: $");
 
         Customer customer = new Customer(customerId, customerName, customerBalance);
 
@@ -354,7 +355,7 @@ public class StoreApplication {
                 currentReceipt = storeService.addToReceipt(currentReceipt, productId, quantity, customer);
 
                 System.out.println("Product added successfully!");
-                System.out.println("Current receipt total: $" + currentReceipt.total());
+                System.out.println("Current receipt total: $" + currentReceipt.total().doubleValue());
 
             } catch (ProductNotFoundException | ProductExpiredException
                     | InvalidQuantityException | InsufficientQuantityException
@@ -372,13 +373,14 @@ public class StoreApplication {
 
     private void viewFinancialStatus() {
         System.out.println("\n=== FINANCIAL STATUS ===");
-        System.out.printf("Total turnover (Revenue)         : $%.2f\n", store.turnover());
-        System.out.printf("Cost of goods sold (COGS)      : $%.2f\n", store.costOfSoldGoods());
-        System.out.printf("Gross Profit (Turnover - COGS) : $%.2f\n", store.turnover() - store.costOfSoldGoods());
-        System.out.printf("Monthly salary costs             : $%.2f\n", store.salaryExpenses());
-        System.out.printf("Operating Profit                 : $%.2f\n", store.profit());
+        System.out.printf("Total turnover (Revenue)         : $%.2f\n", store.turnover().doubleValue());
+        System.out.printf("Cost of goods sold (COGS)      : $%.2f\n", store.costOfSoldGoods().doubleValue());
+        System.out.printf("Gross Profit (Turnover - COGS) : $%.2f\n", 
+                store.turnover().subtract(store.costOfSoldGoods()).doubleValue());
+        System.out.printf("Monthly salary costs             : $%.2f\n", store.salaryExpenses().doubleValue());
+        System.out.printf("Operating Profit                 : $%.2f\n", store.profit().doubleValue());
         System.out.println("---------------------------------------------------");
-        System.out.printf("Total Cost of All Goods Supplied : $%.2f\n", store.getTotalCostOfAllGoodsSupplied());
+        System.out.printf("Total Cost of All Goods Supplied : $%.2f\n", store.getTotalCostOfAllGoodsSupplied().doubleValue());
 
         Map<String, Integer> soldItems = store.getSoldItems();
         if (!soldItems.isEmpty()) {
@@ -406,7 +408,7 @@ public class StoreApplication {
             System.out.println("\n=== ALL RECEIPTS ===");
             for (Receipt r : receipts) {
                 System.out.println("Receipt #" + r.getNumber() + " - Cashier: "
-                        + r.getCashier().getName() + " - Total: $" + r.total());
+                        + r.getCashier().getName() + " - Total: $" + r.total().doubleValue());
             }
 
             int receiptNumber = getIntInput("Enter receipt number to view details (0 to cancel): ");
@@ -431,19 +433,19 @@ public class StoreApplication {
             scanner.next();
         }
         int value = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline
+        scanner.nextLine();
         return value;
     }
 
-    private double getDoubleInput(String prompt) {
+    private BigDecimal getBigDecimalInput(String prompt) {
         System.out.print(prompt);
-        while (!scanner.hasNextDouble()) {
+        while (!scanner.hasNextBigDecimal()) {
             System.out.println("Please enter a valid number.");
             System.out.print(prompt);
             scanner.next();
         }
-        double value = scanner.nextDouble();
-        scanner.nextLine(); // Consume the newline
+        BigDecimal value = scanner.nextBigDecimal();
+        scanner.nextLine();
         return value;
     }
 

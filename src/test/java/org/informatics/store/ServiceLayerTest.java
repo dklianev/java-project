@@ -1,5 +1,6 @@
 package org.informatics.store;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.informatics.config.StoreConfig;
@@ -26,7 +27,12 @@ public class ServiceLayerTest {
 
     @BeforeEach
     public void setUp() {
-        config = new StoreConfig(0.2, 0.25, 3, 0.3);
+        config = new StoreConfig(
+            new BigDecimal("0.20"), 
+            new BigDecimal("0.25"), 
+            3, 
+            new BigDecimal("0.30")
+        );
         store = new Store(config);
         goodsService = new GoodsServiceImpl(store);
         cashDeskService = new CashdeskServiceImpl(store);
@@ -36,14 +42,14 @@ public class ServiceLayerTest {
     void testGoodsServiceAddAndList() {
         try {
             // Create a product and add it using the goods service
-            Product notebook = new NonFoodProduct("N1", "Notebook", 1, LocalDate.MAX, 5);
+            Product notebook = new NonFoodProduct("N1", "Notebook", new BigDecimal("1"), LocalDate.MAX, 5);
             goodsService.addProduct(notebook);
 
             // Verify the product was added
             assertEquals(1, goodsService.listProducts().size(), "GoodsService should list one product");
 
             // Add another product of different type
-            Product milk = new FoodProduct("F1", "Milk", 2.0, LocalDate.now().plusDays(5), 10);
+            Product milk = new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(5), 10);
             goodsService.addProduct(milk);
 
             // Verify both products are listed
@@ -62,14 +68,14 @@ public class ServiceLayerTest {
     @Test
     void testCashdeskServiceAddAndList() {
         // Add a cashier using cashdesk service
-        Cashier bob = new Cashier("C1", "Bob", 1000);
+        Cashier bob = new Cashier("C1", "Bob", new BigDecimal("1000"));
         cashDeskService.addCashier(bob);
 
         // Verify cashier was added
         assertEquals(1, cashDeskService.listCashiers().size(), "CashDeskService should list one cashier");
 
         // Add another cashier
-        Cashier alice = new Cashier("C2", "Alice", 1200);
+        Cashier alice = new Cashier("C2", "Alice", new BigDecimal("1200"));
         cashDeskService.addCashier(alice);
 
         // Verify both cashiers are listed
@@ -90,7 +96,7 @@ public class ServiceLayerTest {
     void testCashdeskServiceAssignAndRelease() {
         try {
             // Add cashier and desk
-            Cashier bob = new Cashier("C1", "Bob", 1000);
+            Cashier bob = new Cashier("C1", "Bob", new BigDecimal("1000"));
             cashDeskService.addCashier(bob);
 
             CashDesk desk = new CashDesk();

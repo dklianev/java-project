@@ -1,6 +1,7 @@
 package org.informatics.store;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.informatics.config.StoreConfig;
@@ -33,11 +34,16 @@ public class FinancialTest {
     @BeforeEach
     public void setUp() {
         // Common configuration values
-        config = new StoreConfig(0.2, 0.25, 3, 0.3);
+        config = new StoreConfig(
+            BigDecimal.valueOf(0.2), 
+            BigDecimal.valueOf(0.25), 
+            3, 
+            BigDecimal.valueOf(0.3)
+        );
         store = new Store(config);
 
         // Setup cashier
-        cashier = new Cashier("C1", "Test Cashier", 1000);
+        cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
         store.addCashier(cashier);
 
         // Setup cash desk and assign cashier
@@ -50,7 +56,7 @@ public class FinancialTest {
         }
 
         // Setup customer
-        customer = new Customer("CU1", "Test Customer", 1000);
+        customer = new Customer("CU1", "Test Customer", new BigDecimal("1000"));
     }
 
     @Test
@@ -58,7 +64,7 @@ public class FinancialTest {
         try {
             // Test variables
             String productId = "NF1";
-            double purchasePrice = 2.0;
+            BigDecimal purchasePrice = new BigDecimal("2.0");
             int quantity = 2;
 
             // Add non-food product to store
@@ -69,15 +75,16 @@ public class FinancialTest {
             store.sell(cashier, productId, quantity, customer);
 
             // Calculate expected values
-            double expectedSalePrice = purchasePrice * (1 + config.nonFoodsMarkup());
-            double expectedTurnover = expectedSalePrice * quantity;
-            double expectedCost = purchasePrice * quantity;
-            double expectedSalary = cashier.getMonthlySalary();
-            double expectedProfit = expectedTurnover - expectedSalary - expectedCost;
+            BigDecimal expectedSalePrice = product.getPurchasePrice().multiply(
+                    BigDecimal.ONE.add(config.nonFoodsMarkup()));
+            BigDecimal expectedTurnover = expectedSalePrice.multiply(BigDecimal.valueOf(quantity));
+            BigDecimal expectedCost = product.getPurchasePrice().multiply(BigDecimal.valueOf(quantity));
+            BigDecimal expectedSalary = cashier.getMonthlySalary();
+            BigDecimal expectedProfit = expectedTurnover.subtract(expectedSalary).subtract(expectedCost);
 
             // Verify turnover and profit calculations
-            assertEquals(expectedTurnover, store.turnover(), 0.001, "Turnover should match expected value");
-            assertEquals(expectedProfit, store.profit(), 0.001, "Profit should match expected value");
+            assertEquals(0, expectedTurnover.compareTo(store.turnover()), "Turnover should match expected value");
+            assertEquals(0, expectedProfit.compareTo(store.profit()), "Profit should match expected value");
             assertEquals(quantity, store.getSoldItems().get(productId), "Sold quantity should be tracked correctly");
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
@@ -91,7 +98,7 @@ public class FinancialTest {
         try {
             // Test variables
             String productId = "F1";
-            double purchasePrice = 3.0;
+            BigDecimal purchasePrice = new BigDecimal("3.0");
             int quantity = 3;
 
             // Add food product to store
@@ -102,15 +109,16 @@ public class FinancialTest {
             store.sell(cashier, productId, quantity, customer);
 
             // Calculate expected values
-            double expectedSalePrice = purchasePrice * (1 + config.groceriesMarkup());
-            double expectedTurnover = expectedSalePrice * quantity;
-            double expectedCost = purchasePrice * quantity;
-            double expectedSalary = cashier.getMonthlySalary();
-            double expectedProfit = expectedTurnover - expectedSalary - expectedCost;
+            BigDecimal expectedSalePrice = product.getPurchasePrice().multiply(
+                    BigDecimal.ONE.add(config.groceriesMarkup()));
+            BigDecimal expectedTurnover = expectedSalePrice.multiply(BigDecimal.valueOf(quantity));
+            BigDecimal expectedCost = product.getPurchasePrice().multiply(BigDecimal.valueOf(quantity));
+            BigDecimal expectedSalary = cashier.getMonthlySalary();
+            BigDecimal expectedProfit = expectedTurnover.subtract(expectedSalary).subtract(expectedCost);
 
             // Verify turnover and profit calculations
-            assertEquals(expectedTurnover, store.turnover(), 0.001, "Turnover should match expected value");
-            assertEquals(expectedProfit, store.profit(), 0.001, "Profit should match expected value");
+            assertEquals(0, expectedTurnover.compareTo(store.turnover()), "Turnover should match expected value");
+            assertEquals(0, expectedProfit.compareTo(store.profit()), "Profit should match expected value");
             assertEquals(quantity, store.getSoldItems().get(productId), "Sold quantity should be tracked correctly");
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
@@ -124,7 +132,7 @@ public class FinancialTest {
         try {
             // Test variables
             String productId = "F2";
-            double purchasePrice = 4.0;
+            BigDecimal purchasePrice = new BigDecimal("4.0");
             int quantity = 1;
 
             // Add near-expiry food product (expiry is config.daysForNearExpiryDiscount() - 1 days from now)
@@ -136,12 +144,14 @@ public class FinancialTest {
             store.sell(cashier, productId, quantity, customer);
 
             // Calculate expected values with discount
-            double basePrice = purchasePrice * (1 + config.groceriesMarkup());
-            double discountedPrice = basePrice * (1 - config.discountPercentage());
-            double expectedTurnover = discountedPrice * quantity;
+            BigDecimal basePrice = product.getPurchasePrice().multiply(
+                    BigDecimal.ONE.add(config.groceriesMarkup()));
+            BigDecimal discountedPrice = basePrice.multiply(
+                    BigDecimal.ONE.subtract(config.discountPercentage()));
+            BigDecimal expectedTurnover = discountedPrice.multiply(BigDecimal.valueOf(quantity));
 
             // Verify discounted price is applied
-            assertEquals(expectedTurnover, store.turnover(), 0.001, "Turnover should reflect discounted price");
+            assertEquals(0, expectedTurnover.compareTo(store.turnover()), "Turnover should reflect discounted price");
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
                 | IOException | CashDeskNotAssignedException e) {
@@ -153,8 +163,8 @@ public class FinancialTest {
     void testMultipleProductSale() {
         try {
             // Add multiple products
-            Product food = new FoodProduct("F1", "Bread", 2.0, LocalDate.MAX, 10);
-            Product nonFood = new NonFoodProduct("NF1", "Soap", 3.0, LocalDate.MAX, 10);
+            Product food = new FoodProduct("F1", "Bread", new BigDecimal("2.0"), LocalDate.MAX, 10);
+            Product nonFood = new NonFoodProduct("NF1", "Soap", new BigDecimal("3.0"), LocalDate.MAX, 10);
             store.addProduct(food);
             store.addProduct(nonFood);
 
@@ -163,21 +173,28 @@ public class FinancialTest {
             store.sell(cashier, "NF1", 3, customer);
 
             // Calculate expected turnover
-            double foodPrice = 2.0 * (1 + config.groceriesMarkup()) * 2;
-            double nonFoodPrice = 3.0 * (1 + config.nonFoodsMarkup()) * 3;
-            double expectedTurnover = foodPrice + nonFoodPrice;
+            BigDecimal foodBasePrice = food.getPurchasePrice().multiply(
+                    BigDecimal.ONE.add(config.groceriesMarkup()));
+            BigDecimal nonFoodBasePrice = nonFood.getPurchasePrice().multiply(
+                    BigDecimal.ONE.add(config.nonFoodsMarkup()));
+            
+            BigDecimal foodTotalPrice = foodBasePrice.multiply(BigDecimal.valueOf(2));
+            BigDecimal nonFoodTotalPrice = nonFoodBasePrice.multiply(BigDecimal.valueOf(3));
+            BigDecimal expectedTurnover = foodTotalPrice.add(nonFoodTotalPrice);
 
             // Calculate expected costs
-            double expectedCostOfGoods = (2.0 * 2) + (3.0 * 3);
-            double expectedSalary = cashier.getMonthlySalary();
+            BigDecimal foodCost = food.getPurchasePrice().multiply(BigDecimal.valueOf(2));
+            BigDecimal nonFoodCost = nonFood.getPurchasePrice().multiply(BigDecimal.valueOf(3));
+            BigDecimal expectedCostOfGoods = foodCost.add(nonFoodCost);
+            BigDecimal expectedSalary = cashier.getMonthlySalary();
 
             // Expected profit
-            double expectedProfit = expectedTurnover - expectedSalary - expectedCostOfGoods;
+            BigDecimal expectedProfit = expectedTurnover.subtract(expectedSalary).subtract(expectedCostOfGoods);
 
             // Verify financial calculations for multiple sales
-            assertEquals(expectedTurnover, store.turnover(), 0.001, "Turnover should include all sales");
-            assertEquals(expectedCostOfGoods, store.costOfSoldGoods(), 0.001, "Cost of goods should be calculated correctly");
-            assertEquals(expectedProfit, store.profit(), 0.001, "Profit should account for all sales and costs");
+            assertEquals(0, expectedTurnover.compareTo(store.turnover()), "Turnover should include all sales");
+            assertEquals(0, expectedCostOfGoods.compareTo(store.costOfSoldGoods()), "Cost of goods should be calculated correctly");
+            assertEquals(0, expectedProfit.compareTo(store.profit()), "Profit should account for all sales and costs");
             assertEquals(2, store.getReceiptCount(), "Should have issued 2 receipts");
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
@@ -189,13 +206,15 @@ public class FinancialTest {
     @Test
     void testSalaryExpenses() {
         // Add multiple cashiers with different salaries
-        store.addCashier(new Cashier("C2", "Second Cashier", 1200));
-        store.addCashier(new Cashier("C3", "Third Cashier", 1500));
+        store.addCashier(new Cashier("C2", "Second Cashier", new BigDecimal("1200")));
+        store.addCashier(new Cashier("C3", "Third Cashier", new BigDecimal("1500")));
 
         // Calculate expected salary expenses
-        double expectedSalaryExpenses = 1000 + 1200 + 1500;
+        BigDecimal expectedSalaryExpenses = new BigDecimal("1000")
+                .add(new BigDecimal("1200"))
+                .add(new BigDecimal("1500"));
 
         // Verify salary expense calculation
-        assertEquals(expectedSalaryExpenses, store.salaryExpenses(), 0.001, "Salary expenses should be calculated correctly");
+        assertEquals(0, expectedSalaryExpenses.compareTo(store.salaryExpenses()), "Salary expenses should be calculated correctly");
     }
 }

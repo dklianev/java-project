@@ -2,6 +2,7 @@ package org.informatics.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 
 import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
@@ -115,13 +116,13 @@ class StoreServiceImplTest {
     @Test
     void whenTurnover_thenReturnStoreTurnover() {
         // Arrange
-        double expectedTurnover = 1234.56;
+        BigDecimal expectedTurnover = new BigDecimal("1234.56");
         when(mockStore.turnover()).thenReturn(expectedTurnover);
 
         // Act
-        double result = storeService.turnover();
+        BigDecimal result = storeService.turnover();
 
         // Assert
-        assertEquals(expectedTurnover, result);
+        assertEquals(0, expectedTurnover.compareTo(result));
     }
 }

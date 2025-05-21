@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,24 +45,25 @@ public class Receipt implements Serializable {
         return result;
     }
 
-    public void add(Product product, int quantity, double price) {
+    public void add(Product product, int quantity, BigDecimal price) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");
         }
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
         }
-        if (price < 0) {
+        if (price.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
         }
         
         lines.add(new Line(product, quantity, price));
     }
 
-    public double total() {
-        double sum = 0.0;
+    public BigDecimal total() {
+        BigDecimal sum = BigDecimal.ZERO;
         for (Line line : lines) {
-            sum += line.getPrice() * line.getQuantity();
+            BigDecimal lineTotal = line.getPrice().multiply(BigDecimal.valueOf(line.getQuantity()));
+            sum = sum.add(lineTotal);
         }
         return sum;
     }
@@ -101,15 +103,16 @@ public class Receipt implements Serializable {
         sb.append("ITEMS:\n");
         
         for (Line line : lines) {
+            BigDecimal lineTotal = line.getPrice().multiply(BigDecimal.valueOf(line.getQuantity()));
             sb.append(String.format("%-20s %3d x %7.2f = %8.2f\n", 
                     line.getProduct().getName(), 
                     line.getQuantity(), 
-                    line.getPrice(), 
-                    line.getQuantity() * line.getPrice()));
+                    line.getPrice().doubleValue(), 
+                    lineTotal.doubleValue()));
         }
         
         sb.append("----------------------------------------\n");
-        sb.append(String.format("TOTAL: %33.2f\n", total()));
+        sb.append(String.format("TOTAL: %33.2f\n", total().doubleValue()));
         return sb.toString();
     }
 
@@ -117,9 +120,9 @@ public class Receipt implements Serializable {
         private static final long serialVersionUID = 1L;
         private final Product product;
         private final int quantity;
-        private final double price;
+        private final BigDecimal price;
 
-        public Line(Product product, int quantity, double price) {
+        public Line(Product product, int quantity, BigDecimal price) {
             this.product = product;
             this.quantity = quantity;
             this.price = price;
@@ -133,7 +136,7 @@ public class Receipt implements Serializable {
             return quantity;
         }
 
-        public double getPrice() {
+        public BigDecimal getPrice() {
             return price;
         }
     }

@@ -1,19 +1,29 @@
 package org.informatics.config;
 
+import java.math.BigDecimal;
+
 public class StoreConfig {
 
-    private final double groceriesMarkup;     // Renamed from foodMarkup
-    private final double nonFoodsMarkup;      // Renamed from nonFoodMarkup
-    private final int daysForNearExpiryDiscount; // More descriptive name
-    private final double discountPercentage;      // More descriptive name
+    private final BigDecimal groceriesMarkup;     // Markup for grocery items
+    private final BigDecimal nonFoodsMarkup;      // Markup for non-food items
+    private final int daysForNearExpiryDiscount;  // Days before expiry to apply discount
+    private final BigDecimal discountPercentage;  // Discount percentage for near-expiry items
 
     public StoreConfig() {
-        this(0.20, 0.25, 5, 0.30); // Default values
+        this(
+            new BigDecimal("0.20"), 
+            new BigDecimal("0.25"), 
+            5, 
+            new BigDecimal("0.30")
+        ); // Default values
     }
 
-    public StoreConfig(double groceriesMarkup, double nonFoodsMarkup,
-            int daysForNearExpiryDiscount, double discountPercentage) {
-        if (groceriesMarkup < 0 || nonFoodsMarkup < 0 || discountPercentage < 0 || discountPercentage > 1) {
+    public StoreConfig(BigDecimal groceriesMarkup, BigDecimal nonFoodsMarkup,
+            int daysForNearExpiryDiscount, BigDecimal discountPercentage) {
+        if (groceriesMarkup.compareTo(BigDecimal.ZERO) < 0 
+                || nonFoodsMarkup.compareTo(BigDecimal.ZERO) < 0 
+                || discountPercentage.compareTo(BigDecimal.ZERO) < 0 
+                || discountPercentage.compareTo(BigDecimal.ONE) > 0) {
             throw new IllegalArgumentException("Markups and discount percentage must be non-negative, discount <= 1.");
         }
         if (daysForNearExpiryDiscount < 0) {
@@ -25,12 +35,12 @@ public class StoreConfig {
         this.discountPercentage = discountPercentage;
     }
 
-    //getters
-    public double groceriesMarkup() {
+    // Getters
+    public BigDecimal groceriesMarkup() {
         return groceriesMarkup;
     }
 
-    public double nonFoodsMarkup() {
+    public BigDecimal nonFoodsMarkup() {
         return nonFoodsMarkup;
     }
 
@@ -38,18 +48,18 @@ public class StoreConfig {
         return daysForNearExpiryDiscount;
     }
 
-    public double discountPercentage() {
+    public BigDecimal discountPercentage() {
         return discountPercentage;
     }
 
-    //static wrappers
+    // Static wrappers
     private static final StoreConfig _DEFAULT_INSTANCE = new StoreConfig();
 
-    public static double groceriesMarkupStatic() {
+    public static BigDecimal groceriesMarkupStatic() {
         return _DEFAULT_INSTANCE.groceriesMarkup();
     }
 
-    public static double nonFoodsMarkupStatic() {
+    public static BigDecimal nonFoodsMarkupStatic() {
         return _DEFAULT_INSTANCE.nonFoodsMarkup();
     }
 
@@ -57,7 +67,7 @@ public class StoreConfig {
         return _DEFAULT_INSTANCE.daysForNearExpiryDiscount();
     }
 
-    public static double discountPercentageStatic() {
+    public static BigDecimal discountPercentageStatic() {
         return _DEFAULT_INSTANCE.discountPercentage();
     }
 }

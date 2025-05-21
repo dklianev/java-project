@@ -1,15 +1,17 @@
 package org.informatics.entity;
 
+import java.math.BigDecimal;
+
 public class Cashier extends Person {
 
-    private final double monthlySalary;
+    private final BigDecimal monthlySalary;
 
-    public Cashier(String id, String name, double sal) {
+    public Cashier(String id, String name, BigDecimal sal) {
         super(id, name);
         this.monthlySalary = sal;
     }
 
-    public double getMonthlySalary() {
+    public BigDecimal getMonthlySalary() {
         return monthlySalary;
     }
 }

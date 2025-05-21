@@ -2,6 +2,7 @@ package org.informatics.service.contract;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 
 import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
@@ -27,5 +28,5 @@ public interface StoreService {
     
     void saveReceipt(Receipt receipt, File receiptDir) throws IOException;
 
-    double turnover();
+    BigDecimal turnover();
 }

@@ -1,6 +1,7 @@
 package org.informatics.store;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 import org.informatics.config.StoreConfig;
 import org.informatics.entity.CashDesk;
@@ -26,12 +27,17 @@ public class StoreMissingProductTest {
     @BeforeEach
     public void setUp() {
         // Common configuration values
-        StoreConfig config = new StoreConfig(0.2, 0.25, 3, 0.3);
+        StoreConfig config = new StoreConfig(
+            new BigDecimal("0.20"), 
+            new BigDecimal("0.25"), 
+            3, 
+            new BigDecimal("0.30")
+        );
         store = new Store(config);
 
         // Setup cashier and customer
-        cashier = new Cashier("C1", "Bob", 1000);
-        customer = new Customer("CU1", "Ann", 50);
+        cashier = new Cashier("C1", "Bob", new BigDecimal("1000"));
+        customer = new Customer("CU1", "Ann", new BigDecimal("50"));
         store.addCashier(cashier);
 
         // Setup cash desk and assign cashier
