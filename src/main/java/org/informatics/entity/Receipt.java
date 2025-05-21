@@ -2,7 +2,6 @@ package org.informatics.entity;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -71,8 +70,9 @@ public class Receipt implements Serializable {
 
      //Saves this receipt as both a .txt and a .ser file under the given directory.
     public void save(File dir) throws IOException {
-        if (!dir.exists()) dir.mkdirs();
-
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new IOException("Unable to create directory for receipts: " + dir.getAbsolutePath());
+        }
         try ( // 1) write human-readable text file
                 PrintWriter pw = new PrintWriter(new File(dir, "receipt-" + number + ".txt"))) {
             pw.print(this);
@@ -82,10 +82,6 @@ public class Receipt implements Serializable {
                 ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(dir, "receipt-" + number + ".ser")))) {
             oos.writeObject(this);
         }
-    }
-
-    public void save(Path dir) throws IOException {
-        save(dir.toFile());
     }
 
     @Override
