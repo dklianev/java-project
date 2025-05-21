@@ -34,7 +34,6 @@ public class FileServiceTest {
     private Cashier cashier;
     private Customer customer;
     private FileServiceImpl fileService;
-    private CashDesk cashDesk;
 
     @TempDir
     File tempDir;
@@ -53,7 +52,7 @@ public class FileServiceTest {
         fileService = new FileServiceImpl();
 
         // Create cash desk and assign cashier
-        cashDesk = new CashDesk();
+        CashDesk cashDesk = new CashDesk();
         store.addCashier(cashier);
         store.addCashDesk(cashDesk);
 

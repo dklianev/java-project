@@ -22,7 +22,6 @@ public class StoreMissingProductTest {
     private Store store;
     private Cashier cashier;
     private Customer customer;
-    private CashDesk cashDesk;
 
     @BeforeEach
     public void setUp() {
@@ -41,7 +40,7 @@ public class StoreMissingProductTest {
         store.addCashier(cashier);
 
         // Setup cash desk and assign cashier
-        cashDesk = new CashDesk();
+        CashDesk cashDesk = new CashDesk();
         store.addCashDesk(cashDesk);
         try {
             store.assignCashierToDesk(cashier.getId(), cashDesk.getId());

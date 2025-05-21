@@ -20,20 +20,18 @@ import org.junit.jupiter.api.Test;
 
 public class ServiceLayerTest {
 
-    private Store store;
     private GoodsServiceImpl goodsService;
     private CashdeskServiceImpl cashDeskService;
-    private StoreConfig config;
 
     @BeforeEach
     public void setUp() {
-        config = new StoreConfig(
+        StoreConfig config = new StoreConfig(
             new BigDecimal("0.20"), 
             new BigDecimal("0.25"), 
             3, 
             new BigDecimal("0.30")
         );
-        store = new Store(config);
+        Store store = new Store(config);
         goodsService = new GoodsServiceImpl(store);
         cashDeskService = new CashdeskServiceImpl(store);
     }

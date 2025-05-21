@@ -34,7 +34,6 @@ public class ReceiptTest {
     private Store store;
     private Cashier cashier;
     private Customer customer;
-    private CashDesk cashDesk;
     private FileServiceImpl fileService;
 
     @TempDir
@@ -58,7 +57,7 @@ public class ReceiptTest {
         fileService = new FileServiceImpl();
 
         // Create cash desk and assign cashier
-        cashDesk = new CashDesk();
+        CashDesk cashDesk = new CashDesk();
         store.addCashier(cashier);
         store.addCashDesk(cashDesk);
 
