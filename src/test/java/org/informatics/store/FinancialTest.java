@@ -35,10 +35,10 @@ public class FinancialTest {
     public void setUp() {
         // Common configuration values
         config = new StoreConfig(
-            BigDecimal.valueOf(0.2), 
-            BigDecimal.valueOf(0.25), 
+            new BigDecimal("0.20"), 
+            new BigDecimal("0.25"), 
             3, 
-            BigDecimal.valueOf(0.3)
+            new BigDecimal("0.30")
         );
         store = new Store(config);
 
