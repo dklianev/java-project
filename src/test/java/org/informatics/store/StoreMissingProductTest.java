@@ -10,9 +10,13 @@ import org.informatics.entity.Customer;
 import org.informatics.exception.CashDeskNotAssignedException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
+import org.informatics.exception.InvalidConfigurationException;
 import org.informatics.exception.InvalidQuantityException;
+import org.informatics.exception.NegativePriceException;
+import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
+import org.informatics.exception.ProductNullException;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,27 +29,31 @@ public class StoreMissingProductTest {
 
     @BeforeEach
     public void setUp() {
-        // Common configuration values
-        StoreConfig config = new StoreConfig(
-            new BigDecimal("0.20"), 
-            new BigDecimal("0.25"), 
-            3, 
-            new BigDecimal("0.30")
-        );
-        store = new Store(config);
-
-        // Setup cashier and customer
-        cashier = new Cashier("C1", "Bob", new BigDecimal("1000"));
-        customer = new Customer("CU1", "Ann", new BigDecimal("50"));
-        store.addCashier(cashier);
-
-        // Setup cash desk and assign cashier
-        CashDesk cashDesk = new CashDesk();
-        store.addCashDesk(cashDesk);
         try {
-            store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
-        } catch (Exception e) {
-            fail("Failed to set up test environment: " + e.getMessage());
+            // Common configuration values
+            StoreConfig config = new StoreConfig(
+                new BigDecimal("0.20"), 
+                new BigDecimal("0.25"), 
+                3, 
+                new BigDecimal("0.30")
+            );
+            store = new Store(config);
+
+            // Setup cashier and customer
+            cashier = new Cashier("C1", "Bob", new BigDecimal("1000"));
+            customer = new Customer("CU1", "Ann", new BigDecimal("50"));
+            store.addCashier(cashier);
+
+            // Setup cash desk and assign cashier
+            CashDesk cashDesk = new CashDesk();
+            store.addCashDesk(cashDesk);
+            try {
+                store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
+            } catch (Exception e) {
+                fail("Failed to set up test environment: " + e.getMessage());
+            }
+        } catch (InvalidConfigurationException e) {
+            fail("Failed to set up store configuration: " + e.getMessage());
         }
     }
 
@@ -58,7 +66,8 @@ public class StoreMissingProductTest {
         } catch (ProductNotFoundException ex) {
             // Test passed - expected exception
         } catch (IOException | InsufficientBudgetException | InsufficientQuantityException
-                | InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException ex) {
+                | InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException
+                | ProductNullException | NonPositiveQuantityException | NegativePriceException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
@@ -75,7 +84,8 @@ public class StoreMissingProductTest {
             } catch (ProductNotFoundException ex) {
                 // Test passed - expected exception
             } catch (IOException | InsufficientBudgetException | InsufficientQuantityException
-                    | InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException ex) {
+                    | InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException
+                    | ProductNullException | NonPositiveQuantityException | NegativePriceException ex) {
                 fail("Unexpected exception: " + ex.getMessage());
             }
         }

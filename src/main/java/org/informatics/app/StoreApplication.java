@@ -301,6 +301,7 @@ public class StoreApplication {
         BigDecimal customerBalance = getBigDecimalInput("Enter customer balance: $");
 
         Customer customer = new Customer(customerId, customerName, customerBalance);
+        System.out.printf("Initial customer balance: $%.2f\n", customer.getBalance().doubleValue());
 
         // 3. Create a single receipt for the entire purchase
         Receipt currentReceipt;
@@ -336,6 +337,7 @@ public class StoreApplication {
                     } catch (IOException e) {
                         System.err.println("Error saving receipt: " + e.getMessage());
                     }
+                    System.out.printf("Remaining customer balance: $%.2f\n", customer.getBalance().doubleValue());
                     continue;
                 }
 
