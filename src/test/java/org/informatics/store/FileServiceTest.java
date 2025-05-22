@@ -17,15 +17,21 @@ import org.informatics.exception.CashDeskNotAssignedException;
 import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
+import org.informatics.exception.InvalidConfigurationException;
 import org.informatics.exception.InvalidQuantityException;
+import org.informatics.exception.NegativePriceException;
+import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
+import org.informatics.exception.ProductNullException;
 import org.informatics.service.impl.FileServiceImpl;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class FileServiceTest {
 
@@ -38,7 +44,7 @@ public class FileServiceTest {
     File tempDir;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws InvalidConfigurationException {
         StoreConfig config = new StoreConfig(
             new BigDecimal("0.20"), 
             new BigDecimal("0.25"), 
@@ -86,7 +92,8 @@ public class FileServiceTest {
 
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
-                | IOException | CashDeskNotAssignedException | ClassNotFoundException e) {
+                | IOException | CashDeskNotAssignedException | ClassNotFoundException
+                | ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }

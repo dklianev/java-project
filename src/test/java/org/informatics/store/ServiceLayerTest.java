@@ -10,6 +10,7 @@ import org.informatics.entity.FoodProduct;
 import org.informatics.entity.NonFoodProduct;
 import org.informatics.entity.Product;
 import org.informatics.exception.DuplicateProductException;
+import org.informatics.exception.InvalidConfigurationException;
 import org.informatics.service.impl.CashdeskServiceImpl;
 import org.informatics.service.impl.GoodsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,7 @@ public class ServiceLayerTest {
     private CashdeskServiceImpl cashDeskService;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws InvalidConfigurationException {
         StoreConfig config = new StoreConfig(
             new BigDecimal("0.20"), 
             new BigDecimal("0.25"), 
