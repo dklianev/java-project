@@ -1,11 +1,21 @@
 package org.informatics.entity;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.informatics.exception.NegativePriceException;
+import org.informatics.exception.NonPositiveQuantityException;
+import org.informatics.exception.ProductNullException;
 
 public class Receipt implements Serializable {
     @Serial
@@ -36,15 +46,15 @@ public class Receipt implements Serializable {
         return new ArrayList<>(lines);
     }
 
-    public void add(Product product, int quantity, BigDecimal price) {
+    public void add(Product product, int quantity, BigDecimal price) throws ProductNullException, NonPositiveQuantityException, NegativePriceException {
         if (product == null) {
-            throw new IllegalArgumentException("Product cannot be null");
+            throw new ProductNullException();
         }
         if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantity must be positive");
+            throw new NonPositiveQuantityException();
         }
         if (price.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Price cannot be negative");
+            throw new NegativePriceException();
         }
         
         lines.add(new Line(product, quantity, price));

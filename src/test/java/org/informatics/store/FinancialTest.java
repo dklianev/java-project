@@ -15,9 +15,13 @@ import org.informatics.exception.CashDeskNotAssignedException;
 import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
+import org.informatics.exception.InvalidConfigurationException;
 import org.informatics.exception.InvalidQuantityException;
+import org.informatics.exception.NegativePriceException;
+import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
+import org.informatics.exception.ProductNullException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,30 +36,34 @@ public class FinancialTest {
 
     @BeforeEach
     public void setUp() {
-        // Common configuration values
-        config = new StoreConfig(
-            new BigDecimal("0.20"), 
-            new BigDecimal("0.25"), 
-            3, 
-            new BigDecimal("0.30")
-        );
-        store = new Store(config);
-
-        // Setup cashier
-        cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
-        store.addCashier(cashier);
-
-        // Setup cash desk and assign cashier
-        CashDesk cashDesk = new CashDesk();
-        store.addCashDesk(cashDesk);
         try {
-            store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
-        } catch (Exception e) {
-            fail("Failed to set up test environment: " + e.getMessage());
-        }
+            // Common configuration values
+            config = new StoreConfig(
+                new BigDecimal("0.20"), 
+                new BigDecimal("0.25"), 
+                3, 
+                new BigDecimal("0.30")
+            );
+            store = new Store(config);
 
-        // Setup customer
-        customer = new Customer("CU1", "Test Customer", new BigDecimal("1000"));
+            // Setup cashier
+            cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
+            store.addCashier(cashier);
+
+            // Setup cash desk and assign cashier
+            CashDesk cashDesk = new CashDesk();
+            store.addCashDesk(cashDesk);
+            try {
+                store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
+            } catch (Exception e) {
+                fail("Failed to set up test environment: " + e.getMessage());
+            }
+
+            // Setup customer
+            customer = new Customer("CU1", "Test Customer", new BigDecimal("1000"));
+        } catch (InvalidConfigurationException e) {
+            fail("Failed to set up store configuration: " + e.getMessage());
+        }
     }
 
     @Test
@@ -87,7 +95,8 @@ public class FinancialTest {
             assertEquals(quantity, store.getSoldItems().get(productId), "Sold quantity should be tracked correctly");
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
-                | IOException | CashDeskNotAssignedException e) {
+                | IOException | CashDeskNotAssignedException | ProductNullException 
+                | NonPositiveQuantityException | NegativePriceException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -121,7 +130,8 @@ public class FinancialTest {
             assertEquals(quantity, store.getSoldItems().get(productId), "Sold quantity should be tracked correctly");
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
-                | IOException | CashDeskNotAssignedException e) {
+                | IOException | CashDeskNotAssignedException | ProductNullException 
+                | NonPositiveQuantityException | NegativePriceException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -153,7 +163,8 @@ public class FinancialTest {
             assertEquals(0, expectedTurnover.compareTo(store.turnover()), "Turnover should reflect discounted price");
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
-                | IOException | CashDeskNotAssignedException e) {
+                | IOException | CashDeskNotAssignedException | ProductNullException 
+                | NonPositiveQuantityException | NegativePriceException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -197,7 +208,8 @@ public class FinancialTest {
             assertEquals(2, store.getReceiptCount(), "Should have issued 2 receipts");
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
-                | IOException | CashDeskNotAssignedException e) {
+                | IOException | CashDeskNotAssignedException | ProductNullException 
+                | NonPositiveQuantityException | NegativePriceException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }

@@ -17,9 +17,13 @@ import org.informatics.exception.CashDeskNotAssignedException;
 import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
+import org.informatics.exception.InvalidConfigurationException;
 import org.informatics.exception.InvalidQuantityException;
+import org.informatics.exception.NegativePriceException;
+import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
+import org.informatics.exception.ProductNullException;
 import org.informatics.service.impl.FileServiceImpl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,30 +45,34 @@ public class ReceiptTest {
 
     @BeforeEach
     public void setUp() {
-        // Reset the receipt counter before each test
-        Receipt.resetCounter();
-        
-        // Common setup for all tests
-        StoreConfig config = new StoreConfig(
-            new BigDecimal("0.20"), 
-            new BigDecimal("0.25"), 
-            3, 
-            new BigDecimal("0.30")
-        );
-        store = new Store(config);
-        cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
-        customer = new Customer("CU1", "Test Customer", new BigDecimal("200"));
-        fileService = new FileServiceImpl();
-
-        // Create cash desk and assign cashier
-        CashDesk cashDesk = new CashDesk();
-        store.addCashier(cashier);
-        store.addCashDesk(cashDesk);
-
         try {
-            store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
-        } catch (Exception e) {
-            fail("Failed to set up test environment: " + e.getMessage());
+            // Reset the receipt counter before each test
+            Receipt.resetCounter();
+            
+            // Common setup for all tests
+            StoreConfig config = new StoreConfig(
+                new BigDecimal("0.20"), 
+                new BigDecimal("0.25"), 
+                3, 
+                new BigDecimal("0.30")
+            );
+            store = new Store(config);
+            cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
+            customer = new Customer("CU1", "Test Customer", new BigDecimal("200"));
+            fileService = new FileServiceImpl();
+
+            // Create cash desk and assign cashier
+            CashDesk cashDesk = new CashDesk();
+            store.addCashier(cashier);
+            store.addCashDesk(cashDesk);
+
+            try {
+                store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
+            } catch (Exception e) {
+                fail("Failed to set up test environment: " + e.getMessage());
+            }
+        } catch (InvalidConfigurationException e) {
+            fail("Failed to set up store configuration: " + e.getMessage());
         }
     }
 
@@ -81,16 +89,20 @@ public class ReceiptTest {
 
     @Test
     void testReceiptAddItemAndTotal() {
-        // Create a receipt and add items
-        Receipt receipt = new Receipt(cashier);
+        try {
+            // Create a receipt and add items
+            Receipt receipt = new Receipt(cashier);
 
-        // Add a product to the receipt
-        BigDecimal price = new BigDecimal("2.50");
-        receipt.add(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 5), 2, price);
+            // Add a product to the receipt
+            BigDecimal price = new BigDecimal("2.50");
+            receipt.add(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 5), 2, price);
 
-        // Check the receipt details
-        assertEquals(1, receipt.getLines().size(), "Receipt should have one item");
-        assertEquals(price.multiply(new BigDecimal("2")), receipt.total(), "Receipt total should be calculated correctly");
+            // Check the receipt details
+            assertEquals(1, receipt.getLines().size(), "Receipt should have one item");
+            assertEquals(price.multiply(new BigDecimal("2")), receipt.total(), "Receipt total should be calculated correctly");
+        } catch (ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
+            fail("Test failed with exception: " + e.getMessage());
+        }
     }
 
     @Test
@@ -116,7 +128,7 @@ public class ReceiptTest {
 
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
-                | IOException | CashDeskNotAssignedException e) {
+                | IOException | CashDeskNotAssignedException | ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -162,23 +174,28 @@ public class ReceiptTest {
 
         } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
                 | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
-                | IOException | CashDeskNotAssignedException | ClassNotFoundException e) {
+                | IOException | CashDeskNotAssignedException | ClassNotFoundException
+                | ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
 
     @Test
     void testReceiptToString() {
-        Receipt receipt = new Receipt(cashier);
-        receipt.add(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 5), 2, new BigDecimal("2.50"));
+        try {
+            Receipt receipt = new Receipt(cashier);
+            receipt.add(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 5), 2, new BigDecimal("2.50"));
 
-        String receiptString = receipt.toString();
+            String receiptString = receipt.toString();
 
-        assertNotNull(receiptString, "Receipt toString should not be null");
-        assertTrue(receiptString.contains("RECEIPT #"), "Receipt should include receipt number");
-        assertTrue(receiptString.contains("Date:"), "Receipt should include date");
-        assertTrue(receiptString.contains("Cashier:"), "Receipt should include cashier");
-        assertTrue(receiptString.contains("Milk"), "Receipt should include product name");
-        assertTrue(receiptString.contains("TOTAL:"), "Receipt should include total");
+            assertNotNull(receiptString, "Receipt toString should not be null");
+            assertTrue(receiptString.contains("RECEIPT #"), "Receipt should include receipt number");
+            assertTrue(receiptString.contains("Date:"), "Receipt should include date");
+            assertTrue(receiptString.contains("Cashier:"), "Receipt should include cashier");
+            assertTrue(receiptString.contains("Milk"), "Receipt should include product name");
+            assertTrue(receiptString.contains("TOTAL:"), "Receipt should include total");
+        } catch (ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
+            fail("Test failed with exception: " + e.getMessage());
+        }
     }
 }

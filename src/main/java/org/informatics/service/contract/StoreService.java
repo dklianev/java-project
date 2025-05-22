@@ -11,20 +11,25 @@ import org.informatics.exception.CashDeskNotAssignedException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
 import org.informatics.exception.InvalidQuantityException;
+import org.informatics.exception.NegativePriceException;
+import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
+import org.informatics.exception.ProductNullException;
 
 public interface StoreService {
 
     Receipt sell(Cashier c, String id, int qty, Customer cust, File receiptDir)
             throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException, CashDeskNotAssignedException;
+            InsufficientQuantityException, InsufficientBudgetException, IOException, CashDeskNotAssignedException,
+            ProductNullException, NonPositiveQuantityException, NegativePriceException;
     
     Receipt createReceipt(Cashier c) throws CashDeskNotAssignedException;
     
     Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException;
+            InsufficientQuantityException, InsufficientBudgetException, IOException,
+            ProductNullException, NonPositiveQuantityException, NegativePriceException;
     
     void saveReceipt(Receipt receipt, File receiptDir) throws IOException;
 

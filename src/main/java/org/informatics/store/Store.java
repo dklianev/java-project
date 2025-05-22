@@ -21,8 +21,11 @@ import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
 import org.informatics.exception.InvalidQuantityException;
+import org.informatics.exception.NegativePriceException;
+import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
+import org.informatics.exception.ProductNullException;
 
 public class Store {
 
@@ -129,7 +132,8 @@ public class Store {
 
     public Receipt sell(Cashier cashier, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException, CashDeskNotAssignedException {
+            InsufficientQuantityException, InsufficientBudgetException, IOException, CashDeskNotAssignedException,
+            ProductNullException, NonPositiveQuantityException, NegativePriceException {
         if (qty <= 0) {
             throw new InvalidQuantityException(qty);
         }
@@ -167,7 +171,8 @@ public class Store {
 
     public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException {
+            InsufficientQuantityException, InsufficientBudgetException,
+            ProductNullException, NonPositiveQuantityException, NegativePriceException {
         if (qty <= 0) {
             throw new InvalidQuantityException(qty);
         }

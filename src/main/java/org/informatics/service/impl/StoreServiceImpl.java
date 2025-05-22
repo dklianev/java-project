@@ -11,8 +11,11 @@ import org.informatics.exception.CashDeskNotAssignedException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
 import org.informatics.exception.InvalidQuantityException;
+import org.informatics.exception.NegativePriceException;
+import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
+import org.informatics.exception.ProductNullException;
 import org.informatics.service.contract.StoreService;
 import org.informatics.store.Store;
 
@@ -27,7 +30,8 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public Receipt sell(Cashier c, String id, int qty, Customer cust, File receiptDir)
             throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException, CashDeskNotAssignedException {
+            InsufficientQuantityException, InsufficientBudgetException, IOException, CashDeskNotAssignedException,
+            ProductNullException, NonPositiveQuantityException, NegativePriceException {
         Receipt receipt = store.sell(c, id, qty, cust);
         receipt.save(receiptDir);
         return receipt;
@@ -41,7 +45,8 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException {
+            InsufficientQuantityException, InsufficientBudgetException, IOException,
+            ProductNullException, NonPositiveQuantityException, NegativePriceException {
         return store.addToReceipt(receipt, productId, qty, cust);
     }
     

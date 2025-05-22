@@ -2,6 +2,8 @@ package org.informatics.config;
 
 import java.math.BigDecimal;
 
+import org.informatics.exception.InvalidConfigurationException;
+
 public class StoreConfig {
 
     private final BigDecimal groceriesMarkup;     // Markup for grocery items
@@ -9,7 +11,7 @@ public class StoreConfig {
     private final int daysForNearExpiryDiscount;  // Days before expiry to apply discount
     private final BigDecimal discountPercentage;  // Discount percentage for near-expiry items
 
-    public StoreConfig() {
+    public StoreConfig() throws InvalidConfigurationException {
         this(
             new BigDecimal("0.20"), 
             new BigDecimal("0.25"), 
@@ -19,15 +21,15 @@ public class StoreConfig {
     }
 
     public StoreConfig(BigDecimal groceriesMarkup, BigDecimal nonFoodsMarkup,
-            int daysForNearExpiryDiscount, BigDecimal discountPercentage) {
+            int daysForNearExpiryDiscount, BigDecimal discountPercentage) throws InvalidConfigurationException {
         if (groceriesMarkup.compareTo(BigDecimal.ZERO) < 0 
                 || nonFoodsMarkup.compareTo(BigDecimal.ZERO) < 0 
                 || discountPercentage.compareTo(BigDecimal.ZERO) < 0 
                 || discountPercentage.compareTo(BigDecimal.ONE) > 0) {
-            throw new IllegalArgumentException("Markups and discount percentage must be non-negative, discount <= 1.");
+            throw new InvalidConfigurationException("Markups and discount percentage must be non-negative, discount <= 1.");
         }
         if (daysForNearExpiryDiscount < 0) {
-            throw new IllegalArgumentException("Days for near expiry discount cannot be negative.");
+            throw new InvalidConfigurationException("Days for near expiry discount cannot be negative.");
         }
         this.groceriesMarkup = groceriesMarkup;
         this.nonFoodsMarkup = nonFoodsMarkup;
@@ -53,7 +55,16 @@ public class StoreConfig {
     }
 
     // Static wrappers
-    private static final StoreConfig _DEFAULT_INSTANCE = new StoreConfig();
+    private static final StoreConfig _DEFAULT_INSTANCE;
+    
+    static {
+        try {
+            _DEFAULT_INSTANCE = new StoreConfig();
+        } catch (InvalidConfigurationException e) {
+            // This should never happen with default values
+            throw new RuntimeException("Failed to initialize default store config", e);
+        }
+    }
 
     public static BigDecimal groceriesMarkupStatic() {
         return _DEFAULT_INSTANCE.groceriesMarkup();
