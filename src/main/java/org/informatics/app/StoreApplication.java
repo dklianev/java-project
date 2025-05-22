@@ -22,9 +22,13 @@ import org.informatics.exception.CashDeskNotAssignedException;
 import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
+import org.informatics.exception.InvalidConfigurationException;
 import org.informatics.exception.InvalidQuantityException;
+import org.informatics.exception.NegativePriceException;
+import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
+import org.informatics.exception.ProductNullException;
 import org.informatics.service.impl.CashdeskServiceImpl;
 import org.informatics.service.impl.FileServiceImpl;
 import org.informatics.service.impl.GoodsServiceImpl;
@@ -44,21 +48,29 @@ public class StoreApplication {
 
     public StoreApplication() {
         // Initialize store with configuration
-        StoreConfig config = new StoreConfig(
-                new BigDecimal("0.20"), // 20% markup for groceries
-                new BigDecimal("0.25"), // 25% markup for non-food items
-                5, // 5 days before expiry for discount
-                new BigDecimal("0.30") // 30% discount for near-expiry items
-        );
-
-        store = new Store(config);
+        try {
+            StoreConfig config = new StoreConfig(
+                    new BigDecimal("0.20"), // 20% markup for groceries
+                    new BigDecimal("0.25"), // 25% markup for non-food items
+                    5, // 5 days before expiry for discount
+                    new BigDecimal("0.30") // 30% discount for near-expiry items
+            );
+            
+            store = new Store(config);
+        } catch (InvalidConfigurationException e) {
+            System.err.println("Error initializing store configuration: " + e.getMessage());
+            throw new RuntimeException("Failed to initialize store", e);
+        }
+        
         goodsService = new GoodsServiceImpl(store);
         cashDeskService = new CashdeskServiceImpl(store);
         storeService = new StoreServiceImpl(store);
         fileService = new FileServiceImpl();
         scanner = new Scanner(System.in);
         receiptDir = new File("receipts");
-        receiptDir.mkdirs();
+        if (!receiptDir.exists() && !receiptDir.mkdirs()) {
+            System.err.println("Warning: Failed to create receipts directory");
+        }
     }
 
     public void start() {
@@ -140,7 +152,7 @@ public class StoreApplication {
         System.out.println("0. Exit");
     }
 
-    private void processChoice(int choice) throws Exception {
+    private void processChoice(int choice) {
         switch (choice) {
             case 1 ->
                 listProducts();
@@ -230,7 +242,7 @@ public class StoreApplication {
         }
     }
 
-    private void assignCashierToSelectedDesk() throws Exception {
+    private void assignCashierToSelectedDesk() {
         listCashiers();
         String cashierId = getStringInput("Enter ID of cashier to assign: ");
         Optional<Cashier> cashierOpt = cashDeskService.findCashierById(cashierId);
@@ -254,7 +266,7 @@ public class StoreApplication {
         }
     }
 
-    private void releaseCashierFromSelectedDesk() throws Exception {
+    private void releaseCashierFromSelectedDesk() {
         listCashDesks();
         String deskId = getStringInput("Enter ID of cash desk to release: ");
         Optional<CashDesk> deskOpt = cashDeskService.findCashDeskById(deskId);
@@ -274,7 +286,7 @@ public class StoreApplication {
         }
     }
 
-    private void makeSale() throws Exception {
+    private void makeSale() {
         // 1. Select cashier
         listCashiers();
         String cashierId = getStringInput("Enter ID of cashier making the sale: ");
@@ -298,7 +310,7 @@ public class StoreApplication {
         // 2. Create customer
         String customerId = "CU" + System.currentTimeMillis() % 10000;
         String customerName = getStringInput("Enter customer name: ");
-        BigDecimal customerBalance = getBigDecimalInput("Enter customer balance: $");
+        BigDecimal customerBalance = getCustomerBalanceInput();
 
         Customer customer = new Customer(customerId, customerName, customerBalance);
         System.out.printf("Initial customer balance: $%.2f\n", customer.getBalance().doubleValue());
@@ -332,7 +344,7 @@ public class StoreApplication {
                     try {
                         storeService.saveReceipt(currentReceipt, receiptDir);
                         System.out.println("\n--- FINAL RECEIPT ---");
-                        System.out.println(currentReceipt.toString());
+                        System.out.println(currentReceipt);
                         System.out.println("---------------------");
                     } catch (IOException e) {
                         System.err.println("Error saving receipt: " + e.getMessage());
@@ -361,7 +373,8 @@ public class StoreApplication {
 
             } catch (ProductNotFoundException | ProductExpiredException
                     | InvalidQuantityException | InsufficientQuantityException
-                    | InsufficientBudgetException e) {
+                    | InsufficientBudgetException | ProductNullException 
+                    | NonPositiveQuantityException | NegativePriceException e) {
                 System.err.println("Sale Error: " + e.getMessage());
                 if (e instanceof InsufficientBudgetException) {
                     addMoreProducts = false;
@@ -417,7 +430,7 @@ public class StoreApplication {
             if (receiptNumber > 0) {
                 Receipt r = fileService.load(receiptDir, receiptNumber);
                 if (r != null) {
-                    System.out.println("\n" + r.toString());
+                    System.out.println("\n" + r);
                 } else {
                     System.out.println("Receipt not found.");
                 }
@@ -439,11 +452,11 @@ public class StoreApplication {
         return value;
     }
 
-    private BigDecimal getBigDecimalInput(String prompt) {
-        System.out.print(prompt);
+    private BigDecimal getCustomerBalanceInput() {
+        System.out.print("Enter customer balance: $");
         while (!scanner.hasNextBigDecimal()) {
             System.out.println("Please enter a valid number.");
-            System.out.print(prompt);
+            System.out.print("Enter customer balance: $");
             scanner.next();
         }
         BigDecimal value = scanner.nextBigDecimal();
