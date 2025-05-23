@@ -11,15 +11,6 @@ public class StoreConfig {
     private final int daysForNearExpiryDiscount;  // Days before expiry to apply discount
     private final BigDecimal discountPercentage;  // Discount percentage for near-expiry items
 
-    public StoreConfig() throws InvalidConfigurationException {
-        this(
-            new BigDecimal("0.20"), 
-            new BigDecimal("0.25"), 
-            5, 
-            new BigDecimal("0.30")
-        ); // Default values
-    }
-
     public StoreConfig(BigDecimal groceriesMarkup, BigDecimal nonFoodsMarkup,
             int daysForNearExpiryDiscount, BigDecimal discountPercentage) throws InvalidConfigurationException {
         if (groceriesMarkup.compareTo(BigDecimal.ZERO) < 0 
@@ -52,33 +43,5 @@ public class StoreConfig {
 
     public BigDecimal discountPercentage() {
         return discountPercentage;
-    }
-
-    // Static wrappers
-    private static final StoreConfig _DEFAULT_INSTANCE;
-    
-    static {
-        try {
-            _DEFAULT_INSTANCE = new StoreConfig();
-        } catch (InvalidConfigurationException e) {
-            // This should never happen with default values
-            throw new RuntimeException("Failed to initialize default store config", e);
-        }
-    }
-
-    public static BigDecimal groceriesMarkupStatic() {
-        return _DEFAULT_INSTANCE.groceriesMarkup();
-    }
-
-    public static BigDecimal nonFoodsMarkupStatic() {
-        return _DEFAULT_INSTANCE.nonFoodsMarkup();
-    }
-
-    public static int daysForNearExpiryDiscountStatic() {
-        return _DEFAULT_INSTANCE.daysForNearExpiryDiscount();
-    }
-
-    public static BigDecimal discountPercentageStatic() {
-        return _DEFAULT_INSTANCE.discountPercentage();
     }
 }
