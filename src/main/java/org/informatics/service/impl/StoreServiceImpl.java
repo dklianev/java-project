@@ -2,20 +2,14 @@ package org.informatics.service.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 
 import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
 import org.informatics.entity.Receipt;
-import org.informatics.exception.CashDeskNotAssignedException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
-import org.informatics.exception.InvalidQuantityException;
-import org.informatics.exception.NegativePriceException;
-import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
-import org.informatics.exception.ProductNullException;
 import org.informatics.service.contract.StoreService;
 import org.informatics.store.Store;
 
@@ -23,40 +17,29 @@ public class StoreServiceImpl implements StoreService {
 
     private final Store store;
 
-    public StoreServiceImpl(Store s) {
-        this.store = s;
+    public StoreServiceImpl(Store store) {
+        this.store = store;
     }
 
     @Override
-    public Receipt sell(Cashier c, String id, int qty, Customer cust, File receiptDir)
-            throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException, CashDeskNotAssignedException,
-            ProductNullException, NonPositiveQuantityException, NegativePriceException {
-        Receipt receipt = store.sell(c, id, qty, cust);
-        receipt.save(receiptDir);
-        return receipt;
+    public Receipt sell(Cashier cashier, String productId, int quantity, Customer customer)
+            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException, IOException {
+        return store.sell(cashier, productId, quantity, customer);
     }
-    
+
     @Override
-    public Receipt createReceipt(Cashier c) throws CashDeskNotAssignedException {
+    public Receipt addToReceipt(Receipt receipt, String productId, int quantity, Customer customer)
+            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
+        return store.addToReceipt(receipt, productId, quantity, customer);
+    }
+
+    @Override
+    public Receipt createReceipt(Cashier c) {
         return store.createReceipt(c);
     }
-    
-    @Override
-    public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
-            throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException,
-            ProductNullException, NonPositiveQuantityException, NegativePriceException {
-        return store.addToReceipt(receipt, productId, qty, cust);
-    }
-    
-    @Override
-    public void saveReceipt(Receipt receipt, File receiptDir) throws IOException {
-        receipt.save(receiptDir);
-    }
 
     @Override
-    public BigDecimal turnover() {
-        return store.turnover();
+    public void saveReceipt(Receipt receipt, File dir) throws IOException {
+        receipt.save(dir);
     }
 }

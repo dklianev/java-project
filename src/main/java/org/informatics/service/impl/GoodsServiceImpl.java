@@ -3,7 +3,6 @@ package org.informatics.service.impl;
 import java.util.List;
 
 import org.informatics.entity.Product;
-import org.informatics.exception.DuplicateProductException;
 import org.informatics.service.contract.GoodsService;
 import org.informatics.store.Store;
 
@@ -11,13 +10,13 @@ public class GoodsServiceImpl implements GoodsService {
 
     private final Store store;
 
-    public GoodsServiceImpl(Store s) {
-        this.store = s;
+    public GoodsServiceImpl(Store store) {
+        this.store = store;
     }
 
     @Override
-    public void addProduct(Product p) throws DuplicateProductException {
-        store.addProduct(p);
+    public boolean addProduct(Product p) {
+        return store.addProduct(p);
     }
 
     @Override

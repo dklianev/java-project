@@ -13,17 +13,10 @@ import org.informatics.entity.Customer;
 import org.informatics.entity.FoodProduct;
 import org.informatics.entity.NonFoodProduct;
 import org.informatics.entity.Receipt;
-import org.informatics.exception.CashDeskNotAssignedException;
-import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
-import org.informatics.exception.InvalidConfigurationException;
-import org.informatics.exception.InvalidQuantityException;
-import org.informatics.exception.NegativePriceException;
-import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
-import org.informatics.exception.ProductNullException;
 import org.informatics.service.impl.FileServiceImpl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -71,7 +64,7 @@ public class ReceiptTest {
             } catch (Exception e) {
                 fail("Failed to set up test environment: " + e.getMessage());
             }
-        } catch (InvalidConfigurationException e) {
+        } catch (IllegalArgumentException e) {
             fail("Failed to set up store configuration: " + e.getMessage());
         }
     }
@@ -100,7 +93,7 @@ public class ReceiptTest {
             // Check the receipt details
             assertEquals(1, receipt.getLines().size(), "Receipt should have one item");
             assertEquals(price.multiply(new BigDecimal("2")), receipt.total(), "Receipt total should be calculated correctly");
-        } catch (ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
+        } catch (IllegalArgumentException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -126,9 +119,8 @@ public class ReceiptTest {
             assertEquals(cashier, receipt1.getCashier(), "Receipt should have the correct cashier");
             assertEquals(1, receipt1.getLines().size(), "Receipt should have one product line");
 
-        } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
-                | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
-                | IOException | CashDeskNotAssignedException | ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException 
+                | InsufficientBudgetException | IOException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -172,10 +164,8 @@ public class ReceiptTest {
             List<Receipt> loadedReceipts = fileService.loadAll(tempDir);
             assertEquals(2, loadedReceipts.size(), "Should load all receipts from directory");
 
-        } catch (DuplicateProductException | ProductNotFoundException | ProductExpiredException
-                | InvalidQuantityException | InsufficientQuantityException | InsufficientBudgetException
-                | IOException | CashDeskNotAssignedException | ClassNotFoundException
-                | ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException 
+                | InsufficientBudgetException | IOException | ClassNotFoundException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -194,7 +184,7 @@ public class ReceiptTest {
             assertTrue(receiptString.contains("Cashier:"), "Receipt should include cashier");
             assertTrue(receiptString.contains("Milk"), "Receipt should include product name");
             assertTrue(receiptString.contains("TOTAL:"), "Receipt should include total");
-        } catch (ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
+        } catch (IllegalArgumentException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }

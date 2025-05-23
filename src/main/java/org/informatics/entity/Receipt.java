@@ -13,10 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.informatics.exception.NegativePriceException;
-import org.informatics.exception.NonPositiveQuantityException;
-import org.informatics.exception.ProductNullException;
-
 public class Receipt implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -46,15 +42,16 @@ public class Receipt implements Serializable {
         return new ArrayList<>(lines);
     }
 
-    public void add(Product product, int quantity, BigDecimal price) throws ProductNullException, NonPositiveQuantityException, NegativePriceException {
+    public void add(Product product, int quantity, BigDecimal price) {
+        // Simple validation logic instead of checked exceptions
         if (product == null) {
-            throw new ProductNullException();
+            throw new IllegalArgumentException("Product cannot be null");
         }
         if (quantity <= 0) {
-            throw new NonPositiveQuantityException();
+            throw new IllegalArgumentException("Quantity must be positive");
         }
         if (price.compareTo(BigDecimal.ZERO) < 0) {
-            throw new NegativePriceException();
+            throw new IllegalArgumentException("Price cannot be negative");
         }
         
         lines.add(new Line(product, quantity, price));

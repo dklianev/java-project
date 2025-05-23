@@ -1,8 +1,9 @@
 package org.informatics.exception;
 
 public class InsufficientQuantityException extends Exception {
-
-    public InsufficientQuantityException(String id, int req, int avail) {
-        super("Need " + (req - avail) + " more of " + id + " (only " + avail + " in stock)");
+    
+    public InsufficientQuantityException(String productId, int requestedQuantity, int availableQuantity) {
+        super(String.format("Insufficient quantity for product '%s'. Requested: %d, Available: %d", 
+              productId, requestedQuantity, availableQuantity));
     }
 }

@@ -18,22 +18,15 @@ import org.informatics.entity.FoodProduct;
 import org.informatics.entity.NonFoodProduct;
 import org.informatics.entity.Product;
 import org.informatics.entity.Receipt;
-import org.informatics.exception.CashDeskNotAssignedException;
-import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InsufficientBudgetException;
-import org.informatics.exception.InsufficientQuantityException;
-import org.informatics.exception.InvalidConfigurationException;
-import org.informatics.exception.InvalidQuantityException;
-import org.informatics.exception.NegativePriceException;
-import org.informatics.exception.NonPositiveQuantityException;
-import org.informatics.exception.ProductExpiredException;
-import org.informatics.exception.ProductNotFoundException;
-import org.informatics.exception.ProductNullException;
 import org.informatics.service.impl.CashdeskServiceImpl;
 import org.informatics.service.impl.FileServiceImpl;
 import org.informatics.service.impl.GoodsServiceImpl;
 import org.informatics.service.impl.StoreServiceImpl;
 import org.informatics.store.Store;
+import org.informatics.exception.ProductNotFoundException;
+import org.informatics.exception.ProductExpiredException;
+import org.informatics.exception.InsufficientQuantityException;
 
 //Main application class demonstrating the store management system functionality.
 public class StoreApplication {
@@ -57,7 +50,7 @@ public class StoreApplication {
             );
             
             store = new Store(config);
-        } catch (InvalidConfigurationException e) {
+        } catch (Exception e) {
             System.err.println("Error initializing store configuration: " + e.getMessage());
             throw new RuntimeException("Failed to initialize store", e);
         }
@@ -109,37 +102,39 @@ public class StoreApplication {
 
     private void initializeStore() {
         // Add cashiers
-        try {
-            cashDeskService.addCashier(new Cashier("C1", "John Smith", new BigDecimal("1200")));
-            cashDeskService.addCashier(new Cashier("C2", "Mary Johnson", new BigDecimal("1150")));
-            cashDeskService.addCashier(new Cashier("C3", "Peter Brown", new BigDecimal("1100")));
+        cashDeskService.addCashier(new Cashier("C1", "John Smith", new BigDecimal("1200")));
+        cashDeskService.addCashier(new Cashier("C2", "Mary Johnson", new BigDecimal("1150")));
+        cashDeskService.addCashier(new Cashier("C3", "Peter Brown", new BigDecimal("1100")));
 
-            // Add Cash Desks
-            cashDeskService.addCashDesk(new CashDesk());
-            cashDeskService.addCashDesk(new CashDesk());
-            System.out.println("Added 2 cash desks.");
+        // Add Cash Desks
+        cashDeskService.addCashDesk(new CashDesk());
+        cashDeskService.addCashDesk(new CashDesk());
+        System.out.println("Added 2 cash desks.");
 
-            // Add products
-            LocalDate today = LocalDate.now();
+        // Add products with validation handling
+        LocalDate today = LocalDate.now();
 
-            // Food products
-            goodsService.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("1.5"), today.plusDays(10), 50));
-            goodsService.addProduct(new FoodProduct("F2", "Bread", new BigDecimal("1.0"), today.plusDays(3), 40));
-            goodsService.addProduct(new FoodProduct("F3", "Eggs", new BigDecimal("2.5"), today.plusDays(15), 30));
-            goodsService.addProduct(new FoodProduct("F4", "Cheese", new BigDecimal("3.5"), today.plusDays(20), 25));
-            goodsService.addProduct(new FoodProduct("F5", "Yogurt", new BigDecimal("1.2"), today.plusDays(4), 35));
+        // Food products
+        addProductSafely(new FoodProduct("F1", "Milk", new BigDecimal("1.5"), today.plusDays(10), 50));
+        addProductSafely(new FoodProduct("F2", "Bread", new BigDecimal("1.0"), today.plusDays(3), 40));
+        addProductSafely(new FoodProduct("F3", "Eggs", new BigDecimal("2.5"), today.plusDays(15), 30));
+        addProductSafely(new FoodProduct("F4", "Cheese", new BigDecimal("3.5"), today.plusDays(20), 25));
+        addProductSafely(new FoodProduct("F5", "Yogurt", new BigDecimal("1.2"), today.plusDays(4), 35));
 
-            // Near expiry product
-            goodsService.addProduct(new FoodProduct("F6", "Tomatoes", new BigDecimal("2.0"), today.plusDays(2), 15));
+        // Near expiry product
+        addProductSafely(new FoodProduct("F6", "Tomatoes", new BigDecimal("2.0"), today.plusDays(2), 15));
 
-            // Non-food products
-            goodsService.addProduct(new NonFoodProduct("N1", "Soap", new BigDecimal("1.8"), today.plusYears(1), 40));
-            goodsService.addProduct(new NonFoodProduct("N2", "Toothpaste", new BigDecimal("2.2"), today.plusYears(2), 30));
-            goodsService.addProduct(new NonFoodProduct("N3", "Shampoo", new BigDecimal("4.0"), today.plusYears(1), 20));
+        // Non-food products
+        addProductSafely(new NonFoodProduct("N1", "Soap", new BigDecimal("1.8"), today.plusYears(1), 40));
+        addProductSafely(new NonFoodProduct("N2", "Toothpaste", new BigDecimal("2.2"), today.plusYears(2), 30));
+        addProductSafely(new NonFoodProduct("N3", "Shampoo", new BigDecimal("4.0"), today.plusYears(1), 20));
 
-            System.out.println("Store initialized with sample data.");
-        } catch (DuplicateProductException e) {
-            System.err.println("Error initializing store: " + e.getMessage());
+        System.out.println("Store initialized with sample data.");
+    }
+    
+    private void addProductSafely(Product product) {
+        if (!goodsService.addProduct(product)) {
+            System.err.println("Warning: Product with ID " + product.getId() + " already exists, skipping.");
         }
     }
 
@@ -325,7 +320,7 @@ public class StoreApplication {
         Receipt currentReceipt;
         try {
             currentReceipt = storeService.createReceipt(selectedCashier);
-        } catch (CashDeskNotAssignedException e) {
+        } catch (IllegalStateException e) {
             System.err.println("Error: " + e.getMessage());
             return;
         }
@@ -378,18 +373,14 @@ public class StoreApplication {
                 System.out.println("Product added successfully!");
                 System.out.println("Current receipt total: $" + String.format("%.2f", currentReceipt.total()));
 
-            // Simplified exception handling - combining similar exceptions
-            } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | 
-                     InsufficientQuantityException | InsufficientBudgetException e) {
-                System.err.println("Sale Error: " + e.getMessage());
-                if (e instanceof InsufficientBudgetException) {
-                    addMoreProducts = false;
-                }
-            } catch (IOException e) {
-                System.err.println("File Error: " + e.getMessage());
-                addMoreProducts = false;
-            } catch (ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
+            // ОПРОСТЕН exception handling - използваме новата йерархия + конкретните exceptions
+            } catch (ProductNotFoundException | ProductExpiredException e) {
                 System.err.println("Product Error: " + e.getMessage());
+            } catch (InsufficientQuantityException e) {
+                System.err.println("Sale Error: " + e.getMessage());
+            } catch (InsufficientBudgetException e) {
+                System.err.println("Budget Error: " + e.getMessage());
+                addMoreProducts = false;
             }
         }
     }

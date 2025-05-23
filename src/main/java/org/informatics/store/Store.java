@@ -15,17 +15,11 @@ import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
 import org.informatics.entity.Product;
 import org.informatics.entity.Receipt;
-import org.informatics.exception.CashDeskNotAssignedException;
 import org.informatics.exception.CashDeskOccupiedException;
-import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
-import org.informatics.exception.InvalidQuantityException;
-import org.informatics.exception.NegativePriceException;
-import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
-import org.informatics.exception.ProductNullException;
 
 public class Store {
 
@@ -105,13 +99,18 @@ public class Store {
                 .findFirst();
     }
 
-    public void addProduct(Product p) throws DuplicateProductException {
+    /**
+     * Adds a product to the store inventory.
+     * Returns true if successful, false if product with same ID already exists.
+     */
+    public boolean addProduct(Product p) {
         if (inventory.containsKey(p.getId())) {
-            throw new DuplicateProductException(p.getId());
+            return false; // Product already exists - validation handled in code
         }
         inventory.put(p.getId(), p);
         totalCostOfAllGoodsSupplied = totalCostOfAllGoodsSupplied.add(
                 p.getPurchasePrice().multiply(BigDecimal.valueOf(p.getQuantity())));
+        return true;
     }
 
     public Product find(String id) {
@@ -131,15 +130,17 @@ public class Store {
     }
 
     public Receipt sell(Cashier cashier, String productId, int qty, Customer cust)
-            throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException, CashDeskNotAssignedException,
-            ProductNullException, NonPositiveQuantityException, NegativePriceException {
+            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException, IOException {
+        
+        // Validation logic instead of exceptions
         if (qty <= 0) {
-            throw new InvalidQuantityException(qty);
+            throw new IllegalArgumentException("Quantity must be positive: " + qty);
         }
 
-        getAssignedDeskForCashier(cashier.getId())
-                .orElseThrow(() -> new CashDeskNotAssignedException("Cashier " + cashier.getName() + " is not assigned to an open cash desk."));
+        // Business logic check instead of exception
+        if (getAssignedDeskForCashier(cashier.getId()).isEmpty()) {
+            throw new IllegalStateException("Cashier " + cashier.getName() + " is not assigned to an open cash desk.");
+        }
         
         Product p = inventory.get(productId);
         if (p == null) {
@@ -170,11 +171,11 @@ public class Store {
     }
 
     public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
-            throws ProductNotFoundException, ProductExpiredException, InvalidQuantityException,
-            InsufficientQuantityException, InsufficientBudgetException,
-            ProductNullException, NonPositiveQuantityException, NegativePriceException {
+            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
+        
+        // Validation logic instead of exceptions
         if (qty <= 0) {
-            throw new InvalidQuantityException(qty);
+            throw new IllegalArgumentException("Quantity must be positive: " + qty);
         }
         
         Product p = inventory.get(productId);
@@ -203,9 +204,11 @@ public class Store {
         return receipt;
     }
 
-    public Receipt createReceipt(Cashier cashier) throws CashDeskNotAssignedException {
-        getAssignedDeskForCashier(cashier.getId())
-                .orElseThrow(() -> new CashDeskNotAssignedException("Cashier " + cashier.getName() + " is not assigned to an open cash desk."));
+    public Receipt createReceipt(Cashier cashier) {
+        // Business logic check instead of exception
+        if (getAssignedDeskForCashier(cashier.getId()).isEmpty()) {
+            throw new IllegalStateException("Cashier " + cashier.getName() + " is not assigned to an open cash desk.");
+        }
         
         Receipt r = new Receipt(cashier);
         receipts.add(r);

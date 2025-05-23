@@ -14,11 +14,6 @@ import org.informatics.service.contract.FileService;
 public class FileServiceImpl implements FileService {
 
     @Override
-    public void save(Receipt r, File dir) throws IOException {
-        r.save(dir);
-    }
-
-    @Override
     public List<Receipt> loadAll(File dir) throws IOException, ClassNotFoundException {
         List<Receipt> list = new ArrayList<>();
 

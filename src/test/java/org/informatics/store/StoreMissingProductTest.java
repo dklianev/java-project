@@ -2,21 +2,17 @@ package org.informatics.store;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import org.informatics.config.StoreConfig;
 import org.informatics.entity.CashDesk;
 import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
-import org.informatics.exception.CashDeskNotAssignedException;
+import org.informatics.entity.FoodProduct;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
-import org.informatics.exception.InvalidConfigurationException;
-import org.informatics.exception.InvalidQuantityException;
-import org.informatics.exception.NegativePriceException;
-import org.informatics.exception.NonPositiveQuantityException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.ProductNotFoundException;
-import org.informatics.exception.ProductNullException;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +26,6 @@ public class StoreMissingProductTest {
     @BeforeEach
     public void setUp() {
         try {
-            // Common configuration values
             StoreConfig config = new StoreConfig(
                 new BigDecimal("0.20"), 
                 new BigDecimal("0.25"), 
@@ -38,55 +33,50 @@ public class StoreMissingProductTest {
                 new BigDecimal("0.30")
             );
             store = new Store(config);
-
-            // Setup cashier and customer
-            cashier = new Cashier("C1", "Bob", new BigDecimal("1000"));
-            customer = new Customer("CU1", "Ann", new BigDecimal("50"));
+            cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
+            customer = new Customer("CU1", "Test Customer", new BigDecimal("100"));
             store.addCashier(cashier);
 
-            // Setup cash desk and assign cashier
-            CashDesk cashDesk = new CashDesk();
-            store.addCashDesk(cashDesk);
+            CashDesk desk = new CashDesk();
+            store.addCashDesk(desk);
             try {
-                store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
+                store.assignCashierToDesk(cashier.getId(), desk.getId());
             } catch (Exception e) {
                 fail("Failed to set up test environment: " + e.getMessage());
             }
-        } catch (InvalidConfigurationException e) {
+        } catch (IllegalArgumentException e) {
             fail("Failed to set up store configuration: " + e.getMessage());
         }
     }
 
     @Test
-    void testProductNotFound() {
+    void testShouldThrowProductNotFoundExceptionForInvalidId() {
         try {
-            // Attempt to sell a product that doesn't exist in the store
-            store.sell(cashier, "XYZ", 1, customer);
+            store.sell(cashier, "INVALID_ID", 1, customer);
             fail("Expected ProductNotFoundException was not thrown");
         } catch (ProductNotFoundException ex) {
             // Test passed - expected exception
-        } catch (IOException | InsufficientBudgetException | InsufficientQuantityException
-                | InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException
-                | ProductNullException | NonPositiveQuantityException | NegativePriceException ex) {
+        } catch (ProductExpiredException | InsufficientQuantityException 
+                | InsufficientBudgetException | IOException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
 
     @Test
-    void testMultipleProductsNotFound() {
-        // Test multiple non-existent products
-        String[] nonExistentProductIds = {"XYZ", "ABC", "DEF"};
-
-        for (String productId : nonExistentProductIds) {
+    void testShouldThrowProductNotFoundExceptionForMultipleProducts() {
+        store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(5), 10));
+        
+        String[] invalidIds = {"INVALID_1", "INVALID_2", "INVALID_3"};
+        
+        for (String productId : invalidIds) {
             try {
                 store.sell(cashier, productId, 1, customer);
                 fail("Expected ProductNotFoundException was not thrown for product " + productId);
             } catch (ProductNotFoundException ex) {
-                // Test passed - expected exception
-            } catch (IOException | InsufficientBudgetException | InsufficientQuantityException
-                    | InvalidQuantityException | ProductExpiredException | CashDeskNotAssignedException
-                    | ProductNullException | NonPositiveQuantityException | NegativePriceException ex) {
-                fail("Unexpected exception: " + ex.getMessage());
+                // Test passed - expected exception for this product
+            } catch (ProductExpiredException | InsufficientQuantityException 
+                    | InsufficientBudgetException | IOException ex) {
+                fail("Unexpected exception for product " + productId + ": " + ex.getMessage());
             }
         }
     }

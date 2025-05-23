@@ -15,7 +15,7 @@ public class Customer extends Person {
 
     public void pay(BigDecimal amt) throws InsufficientBudgetException {
         if (balance.compareTo(amt) < 0) {
-            throw new InsufficientBudgetException(amt.subtract(balance));
+            throw new InsufficientBudgetException(amt, balance);
         }
         balance = balance.subtract(amt);
     }

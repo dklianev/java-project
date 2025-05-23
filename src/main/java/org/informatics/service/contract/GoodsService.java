@@ -1,11 +1,13 @@
 package org.informatics.service.contract;
 
 import org.informatics.entity.Product;
-import org.informatics.exception.DuplicateProductException;
 
 public interface GoodsService {
-
-    void addProduct(Product p) throws DuplicateProductException;
+    /**
+     * Adds a product to the store.
+     * @return true if successful, false if product with same ID already exists
+     */
+    boolean addProduct(Product p);
 
     java.util.List<Product> listProducts();
 
