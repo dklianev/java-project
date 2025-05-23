@@ -1,6 +1,6 @@
 package org.informatics.store;
 
-import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -57,7 +57,7 @@ public class StoreMissingProductTest {
         } catch (ProductNotFoundException ex) {
             // Test passed - expected exception
         } catch (ProductExpiredException | InsufficientQuantityException
-                | InsufficientBudgetException | IOException ex) {
+                | InsufficientBudgetException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
     }
@@ -75,7 +75,7 @@ public class StoreMissingProductTest {
             } catch (ProductNotFoundException ex) {
                 // Test passed - expected exception for this product
             } catch (ProductExpiredException | InsufficientQuantityException
-                    | InsufficientBudgetException | IOException ex) {
+                    | InsufficientBudgetException ex) {
                 fail("Unexpected exception for product " + productId + ": " + ex.getMessage());
             }
         }

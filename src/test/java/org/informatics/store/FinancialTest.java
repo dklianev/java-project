@@ -1,6 +1,6 @@
 package org.informatics.store;
 
-import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -72,7 +72,7 @@ public class FinancialTest {
                     "Turnover should be calculated correctly based on sale prices");
 
         } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
-                | InsufficientBudgetException | IOException e) {
+                | InsufficientBudgetException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -96,7 +96,7 @@ public class FinancialTest {
                     "Cost of sold goods should be calculated based on purchase prices");
 
         } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
-                | InsufficientBudgetException | IOException e) {
+                | InsufficientBudgetException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
@@ -132,7 +132,7 @@ public class FinancialTest {
                     "Profit should be turnover minus salary expenses minus cost of sold goods");
 
         } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
-                | InsufficientBudgetException | IOException e) {
+                | InsufficientBudgetException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }

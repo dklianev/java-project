@@ -1,6 +1,5 @@
 package org.informatics.store;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -135,42 +134,17 @@ public class Store {
 
     // Processes sale transaction: validates business rules, updates inventory, handles payment
     public Receipt sell(Cashier cashier, String productId, int qty, Customer cust)
-            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException, IOException {
-
-        if (qty <= 0) {
-            throw new IllegalArgumentException("Quantity must be positive: " + qty);
-        }
+            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
 
         if (getAssignedDeskForCashier(cashier.getId()).isEmpty()) {
             throw new IllegalStateException("Cashier " + cashier.getName() + " is not assigned to an open cash desk.");
         }
 
-        Product p = inventory.get(productId);
-        if (p == null) {
-            throw new ProductNotFoundException(productId);
-        }
-        if (p.isExpired(LocalDate.now())) {
-            throw new ProductExpiredException(productId);
-        }
-        if (p.getQuantity() < qty) {
-            throw new InsufficientQuantityException(productId, qty, p.getQuantity());
-        }
-        BigDecimal price = p.salePrice(cfg, LocalDate.now());
-        BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(qty));
-        cust.pay(totalPrice);
-        p.addQuantity(-qty);
-        // Track sold quantities for reporting
-        Integer currentQty = soldItems.get(productId);
-        if (currentQty == null) {
-            soldItems.put(productId, qty);
-        } else {
-            soldItems.put(productId, currentQty + qty);
-        }
-        // Add to COGS for profit calculation
-        costOfSoldGoods = costOfSoldGoods.add(
-                p.getPurchasePrice().multiply(BigDecimal.valueOf(qty)));
+        // Process the sale using common logic
+        BigDecimal price = processSaleItem(productId, qty, cust);
+        
         Receipt r = new Receipt(cashier);
-        r.add(p, qty, price);
+        r.add(inventory.get(productId), qty, price);
         receipts.add(r);
         return r;
     }
@@ -178,6 +152,17 @@ public class Store {
     public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
 
+        // Process the sale using common logic
+        BigDecimal price = processSaleItem(productId, qty, cust);
+        
+        receipt.add(inventory.get(productId), qty, price);
+        return receipt;
+    }
+
+    // Common sale processing logic extracted to eliminate duplication
+    private BigDecimal processSaleItem(String productId, int qty, Customer cust)
+            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
+        
         if (qty <= 0) {
             throw new IllegalArgumentException("Quantity must be positive: " + qty);
         }
@@ -192,10 +177,12 @@ public class Store {
         if (p.getQuantity() < qty) {
             throw new InsufficientQuantityException(productId, qty, p.getQuantity());
         }
+        
         BigDecimal price = p.salePrice(cfg, LocalDate.now());
         BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(qty));
         cust.pay(totalPrice);
         p.addQuantity(-qty);
+        
         // Track sold quantities for reporting
         Integer currentQty = soldItems.get(productId);
         if (currentQty == null) {
@@ -203,11 +190,12 @@ public class Store {
         } else {
             soldItems.put(productId, currentQty + qty);
         }
+        
         // Add to COGS for profit calculation
         costOfSoldGoods = costOfSoldGoods.add(
                 p.getPurchasePrice().multiply(BigDecimal.valueOf(qty)));
-        receipt.add(p, qty, price);
-        return receipt;
+        
+        return price;
     }
 
     public Receipt createReceipt(Cashier cashier) {

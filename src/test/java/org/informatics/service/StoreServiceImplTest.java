@@ -42,7 +42,7 @@ public class StoreServiceImplTest {
 
     @Test
     void whenSell_thenReturnReceipt() throws ProductNotFoundException, ProductExpiredException,
-            InsufficientQuantityException, InsufficientBudgetException, IOException {
+            InsufficientQuantityException, InsufficientBudgetException {
         // Arrange
         String productId = "P1";
         int quantity = 2;
@@ -73,7 +73,7 @@ public class StoreServiceImplTest {
 
     @Test
     void whenSell_andStoreThrowsException_thenExceptionIsThrown() throws ProductNotFoundException,
-            ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException, IOException {
+            ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
         // Arrange
         String productId = "P1";
         int quantity = 2;

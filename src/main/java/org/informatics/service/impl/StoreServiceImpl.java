@@ -23,7 +23,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public Receipt sell(Cashier cashier, String productId, int quantity, Customer customer)
-            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException, IOException {
+            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
         return store.sell(cashier, productId, quantity, customer);
     }
 

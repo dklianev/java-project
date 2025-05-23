@@ -14,7 +14,7 @@ import org.informatics.exception.ProductNotFoundException;
 public interface StoreService {
 
     Receipt sell(Cashier cashier, String productId, int quantity, Customer customer)
-            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException, IOException;
+            throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException;
 
     Receipt addToReceipt(Receipt receipt, String productId, int quantity, Customer customer)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException;

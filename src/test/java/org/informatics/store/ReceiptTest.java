@@ -119,8 +119,7 @@ public class ReceiptTest {
             assertEquals(cashier, receipt1.getCashier(), "Receipt should have the correct cashier");
             assertEquals(1, receipt1.getLines().size(), "Receipt should have one product line");
 
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
-                | InsufficientBudgetException | IOException e) {
+                } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException                | InsufficientBudgetException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
     }
