@@ -27,19 +27,19 @@ public class FileServiceImpl implements FileService {
         }
 
         File[] files = dir.listFiles((File dir1, String name) -> name.endsWith(".ser"));
-
-        if (files != null) {
-            for (File file : files) {
-                try {
-                    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-                        Receipt receipt = (Receipt) ois.readObject();
-                        if (receipt != null) {
-                            list.add(receipt);
-                        }
-                    }
-                } catch (InvalidClassException | ClassNotFoundException e) {
-                    System.err.println("Could not deserialize file: " + file.getName() + " - " + e.getMessage());
+        
+        if (files == null) {
+            return list;
+        }
+        
+        for (File file : files) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                Receipt receipt = (Receipt) ois.readObject();
+                if (receipt != null) {
+                    list.add(receipt);
                 }
+            } catch (InvalidClassException | ClassNotFoundException e) {
+                System.err.println("Could not deserialize file: " + file.getName() + " - " + e.getMessage());
             }
         }
 

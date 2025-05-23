@@ -80,16 +80,21 @@ public class Receipt implements Serializable {
 
      //Saves this receipt as both a .txt and a .ser file under the given directory.
     public void save(File dir) throws IOException {
-        if (!dir.exists() && !dir.mkdirs()) {
-            throw new IOException("Unable to create directory for receipts: " + dir.getAbsolutePath());
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+                throw new IOException("Unable to create directory for receipts: " + dir.getAbsolutePath());
+            }
         }
-        try ( // 1) write human-readable text file
-                PrintWriter pw = new PrintWriter(new File(dir, "receipt-" + number + ".txt"))) {
+        
+        // Write human-readable text file
+        File txtFile = new File(dir, "receipt-" + number + ".txt");
+        try (PrintWriter pw = new PrintWriter(txtFile)) {
             pw.print(this);
         }
 
-        try ( // 2) write serialized object
-                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(dir, "receipt-" + number + ".ser")))) {
+        // Write serialized object
+        File serFile = new File(dir, "receipt-" + number + ".ser");
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serFile))) {
             oos.writeObject(this);
         }
     }
@@ -109,12 +114,12 @@ public class Receipt implements Serializable {
             sb.append(String.format("%-20s %3d x %7.2f = %8.2f\n", 
                     line.product().getName(),
                     line.quantity(),
-                    line.price().doubleValue(),
-                    lineTotal.doubleValue()));
+                    line.price(),
+                    lineTotal));
         }
         
         sb.append("----------------------------------------\n");
-        sb.append(String.format("TOTAL: %33.2f\n", total().doubleValue()));
+        sb.append(String.format("TOTAL: %33.2f\n", total()));
         return sb.toString();
     }
 

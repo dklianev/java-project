@@ -67,9 +67,14 @@ public class StoreApplication {
         storeService = new StoreServiceImpl(store);
         fileService = new FileServiceImpl();
         scanner = new Scanner(System.in);
+        
+        // Simplified directory creation
         receiptDir = new File("receipts");
-        if (!receiptDir.exists() && !receiptDir.mkdirs()) {
-            System.err.println("Warning: Failed to create receipts directory");
+        if (!receiptDir.exists()) {
+            boolean created = receiptDir.mkdirs();
+            if (!created) {
+                System.err.println("Warning: Failed to create receipts directory");
+            }
         }
     }
 
@@ -202,7 +207,7 @@ public class StoreApplication {
                     p.getId(),
                     p.getName(),
                     type,
-                    salePrice.doubleValue(),
+                    salePrice,
                     p.getExpiry().format(formatter),
                     p.getQuantity());
         }
@@ -223,7 +228,7 @@ public class StoreApplication {
         for (Cashier c : cashiers) {
             Optional<CashDesk> assignedDesk = cashDeskService.getAssignedDeskForCashier(c.getId());
             String deskInfo = assignedDesk.map(CashDesk::getId).orElse("None");
-            System.out.printf("%-5s %-20s $%-14.2f %-15s\n", c.getId(), c.getName(), c.getMonthlySalary().doubleValue(), deskInfo);
+            System.out.printf("%-5s %-20s $%-14.2f %-15s\n", c.getId(), c.getName(), c.getMonthlySalary(), deskInfo);
         }
     }
 
@@ -307,15 +312,16 @@ public class StoreApplication {
         }
         System.out.println("Cashier " + selectedCashier.getName() + " is at desk " + activeDeskOpt.get().getId() + ".");
 
-        // 2. Create customer
+        // 2. Create customer - simplified customer balance management
         String customerId = "CU" + System.currentTimeMillis() % 10000;
         String customerName = getStringInput("Enter customer name: ");
         BigDecimal customerBalance = getCustomerBalanceInput();
 
+        System.out.printf("Initial customer balance: $%.2f\n", customerBalance);
+        
         Customer customer = new Customer(customerId, customerName, customerBalance);
-        System.out.printf("Initial customer balance: $%.2f\n", customer.getBalance().doubleValue());
 
-        // 3. Create a single receipt for the entire purchase
+        // 3. Create a receipt for the purchase
         Receipt currentReceipt;
         try {
             currentReceipt = storeService.createReceipt(selectedCashier);
@@ -330,7 +336,7 @@ public class StoreApplication {
             return;
         }
 
-        // 4. Add products to receipt
+        // 4. Add products to receipt - simplified exception handling
         boolean addMoreProducts = true;
 
         while (addMoreProducts) {
@@ -340,16 +346,17 @@ public class StoreApplication {
 
                 if (productId.equalsIgnoreCase("done")) {
                     addMoreProducts = false;
-                    // Save the final receipt once when done adding products
+                    
+                    // Simplified file operation
                     try {
                         storeService.saveReceipt(currentReceipt, receiptDir);
                         System.out.println("\n--- FINAL RECEIPT ---");
                         System.out.println(currentReceipt);
                         System.out.println("---------------------");
+                        System.out.printf("Remaining customer balance: $%.2f\n", customer.getBalance());
                     } catch (IOException e) {
                         System.err.println("Error saving receipt: " + e.getMessage());
                     }
-                    System.out.printf("Remaining customer balance: $%.2f\n", customer.getBalance().doubleValue());
                     continue;
                 }
 
@@ -369,12 +376,11 @@ public class StoreApplication {
                 currentReceipt = storeService.addToReceipt(currentReceipt, productId, quantity, customer);
 
                 System.out.println("Product added successfully!");
-                System.out.println("Current receipt total: $" + currentReceipt.total().doubleValue());
+                System.out.println("Current receipt total: $" + String.format("%.2f", currentReceipt.total()));
 
-            } catch (ProductNotFoundException | ProductExpiredException
-                    | InvalidQuantityException | InsufficientQuantityException
-                    | InsufficientBudgetException | ProductNullException 
-                    | NonPositiveQuantityException | NegativePriceException e) {
+            // Simplified exception handling - combining similar exceptions
+            } catch (ProductNotFoundException | ProductExpiredException | InvalidQuantityException | 
+                     InsufficientQuantityException | InsufficientBudgetException e) {
                 System.err.println("Sale Error: " + e.getMessage());
                 if (e instanceof InsufficientBudgetException) {
                     addMoreProducts = false;
@@ -382,20 +388,22 @@ public class StoreApplication {
             } catch (IOException e) {
                 System.err.println("File Error: " + e.getMessage());
                 addMoreProducts = false;
+            } catch (ProductNullException | NonPositiveQuantityException | NegativePriceException e) {
+                System.err.println("Product Error: " + e.getMessage());
             }
         }
     }
 
     private void viewFinancialStatus() {
         System.out.println("\n=== FINANCIAL STATUS ===");
-        System.out.printf("Total turnover (Revenue)         : $%.2f\n", store.turnover().doubleValue());
-        System.out.printf("Cost of goods sold (COGS)      : $%.2f\n", store.costOfSoldGoods().doubleValue());
+        System.out.printf("Total turnover (Revenue)         : $%.2f\n", store.turnover());
+        System.out.printf("Cost of goods sold (COGS)      : $%.2f\n", store.costOfSoldGoods());
         System.out.printf("Gross Profit (Turnover - COGS) : $%.2f\n", 
-                store.turnover().subtract(store.costOfSoldGoods()).doubleValue());
-        System.out.printf("Monthly salary costs             : $%.2f\n", store.salaryExpenses().doubleValue());
-        System.out.printf("Operating Profit                 : $%.2f\n", store.profit().doubleValue());
+                store.turnover().subtract(store.costOfSoldGoods()));
+        System.out.printf("Monthly salary costs             : $%.2f\n", store.salaryExpenses());
+        System.out.printf("Operating Profit                 : $%.2f\n", store.profit());
         System.out.println("---------------------------------------------------");
-        System.out.printf("Total Cost of All Goods Supplied : $%.2f\n", store.getTotalCostOfAllGoodsSupplied().doubleValue());
+        System.out.printf("Total Cost of All Goods Supplied : $%.2f\n", store.getTotalCostOfAllGoodsSupplied());
 
         Map<String, Integer> soldItems = store.getSoldItems();
         if (!soldItems.isEmpty()) {
@@ -412,6 +420,7 @@ public class StoreApplication {
     }
 
     private void viewAllReceipts() {
+        // Simplified file operations with better error handling
         try {
             List<Receipt> receipts = fileService.loadAll(receiptDir);
 
@@ -423,7 +432,7 @@ public class StoreApplication {
             System.out.println("\n=== ALL RECEIPTS ===");
             for (Receipt r : receipts) {
                 System.out.println("Receipt #" + r.getNumber() + " - Cashier: "
-                        + r.getCashier().getName() + " - Total: $" + r.total().doubleValue());
+                        + r.getCashier().getName() + " - Total: $" + String.format("%.2f", r.total()));
             }
 
             int receiptNumber = getIntInput("Enter receipt number to view details (0 to cancel): ");
