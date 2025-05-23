@@ -47,6 +47,7 @@ public class Product implements Serializable {
         return qty;
     }
 
+    // Can accept negative values for sales (reducing inventory)
     public void addQuantity(int d) {
         qty += d;
     }
@@ -55,17 +56,21 @@ public class Product implements Serializable {
         return expiry;
     }
 
+    // Product is expired if expiry date is today or earlier
     public boolean isExpired(LocalDate today) {
         return !expiry.isAfter(today);
     }
 
+    // Calculates sale price: applies markup, then near-expiry discount if applicable
     public BigDecimal salePrice(StoreConfig cfg, LocalDate today) {
+        // Apply category-specific markup
         BigDecimal markup = type == GoodsType.GROCERIES ? 
                 cfg.groceriesMarkup() : cfg.nonFoodsMarkup();
         
         BigDecimal price = purchasePrice.multiply(
                 BigDecimal.ONE.add(markup));
 
+        // Apply near-expiry discount if product is close to expiration
         if (!isExpired(today)
                 && expiry.minusDays(cfg.daysForNearExpiryDiscount()).isBefore(today)) {
             price = price.multiply(

@@ -28,9 +28,9 @@ public class Store {
     private final List<Receipt> receipts = new ArrayList<>();
     private final List<Cashier> cashiers = new ArrayList<>();
     private final List<CashDesk> cashDesks = new ArrayList<>();
-    private final Map<String, Integer> soldItems = new HashMap<>();
-    private BigDecimal costOfSoldGoods = BigDecimal.ZERO;
-    private BigDecimal totalCostOfAllGoodsSupplied = BigDecimal.ZERO;
+    private final Map<String, Integer> soldItems = new HashMap<>(); // Track quantities sold by product ID
+    private BigDecimal costOfSoldGoods = BigDecimal.ZERO;           // COGS: purchase price of sold items
+    private BigDecimal totalCostOfAllGoodsSupplied = BigDecimal.ZERO; // Total inventory investment
 
     public Store(StoreConfig cfg) {
         this.cfg = cfg;
@@ -62,15 +62,18 @@ public class Store {
         CashDesk desk = findCashDeskById(deskId)
                 .orElseThrow(() -> new Exception("CashDesk with ID " + deskId + " not found."));
 
+        // Check if cashier is already assigned to a different desk
         for (CashDesk d : cashDesks) {
             if (d.getCurrentCashier() != null && d.getCurrentCashier().getId().equals(cashierId) && !d.getId().equals(deskId)) {
                 throw new Exception("Cashier " + cashierId + " is already assigned to desk " + d.getId());
             }
         }
+        // Check if target desk is occupied by a different cashier
         if (desk.isOccupied() && !desk.getCurrentCashier().getId().equals(cashierId)) {
             throw new Exception("Desk " + deskId + " is already occupied by cashier " + desk.getCurrentCashier().getId());
         }
 
+        // Release cashier from current desk before reassigning
         cashDesks.stream()
             .filter(d -> d.getCurrentCashier() != null && d.getCurrentCashier().getId().equals(cashierId))
             .findFirst()
@@ -105,9 +108,10 @@ public class Store {
      */
     public boolean addProduct(Product p) {
         if (inventory.containsKey(p.getId())) {
-            return false; // Product already exists - validation handled in code
+            return false;
         }
         inventory.put(p.getId(), p);
+        // Track total investment in inventory
         totalCostOfAllGoodsSupplied = totalCostOfAllGoodsSupplied.add(
                 p.getPurchasePrice().multiply(BigDecimal.valueOf(p.getQuantity())));
         return true;
@@ -129,15 +133,14 @@ public class Store {
         return new ArrayList<>(cashiers);
     }
 
+    // Processes sale transaction: validates business rules, updates inventory, handles payment
     public Receipt sell(Cashier cashier, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException, IOException {
         
-        // Validation logic instead of exceptions
         if (qty <= 0) {
             throw new IllegalArgumentException("Quantity must be positive: " + qty);
         }
 
-        // Business logic check instead of exception
         if (getAssignedDeskForCashier(cashier.getId()).isEmpty()) {
             throw new IllegalStateException("Cashier " + cashier.getName() + " is not assigned to an open cash desk.");
         }
@@ -156,12 +159,14 @@ public class Store {
         BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(qty));
         cust.pay(totalPrice);
         p.addQuantity(-qty);
+        // Track sold quantities for reporting
         Integer currentQty = soldItems.get(productId);
         if (currentQty == null) {
             soldItems.put(productId, qty);
         } else {
             soldItems.put(productId, currentQty + qty);
         }
+        // Add to COGS for profit calculation
         costOfSoldGoods = costOfSoldGoods.add(
                 p.getPurchasePrice().multiply(BigDecimal.valueOf(qty)));
         Receipt r = new Receipt(cashier);
@@ -173,7 +178,6 @@ public class Store {
     public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
         
-        // Validation logic instead of exceptions
         if (qty <= 0) {
             throw new IllegalArgumentException("Quantity must be positive: " + qty);
         }
@@ -192,12 +196,14 @@ public class Store {
         BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(qty));
         cust.pay(totalPrice);
         p.addQuantity(-qty);
+        // Track sold quantities for reporting
         Integer currentQty = soldItems.get(productId);
         if (currentQty == null) {
             soldItems.put(productId, qty);
         } else {
             soldItems.put(productId, currentQty + qty);
         }
+        // Add to COGS for profit calculation
         costOfSoldGoods = costOfSoldGoods.add(
                 p.getPurchasePrice().multiply(BigDecimal.valueOf(qty)));
         receipt.add(p, qty, price);
@@ -205,7 +211,6 @@ public class Store {
     }
 
     public Receipt createReceipt(Cashier cashier) {
-        // Business logic check instead of exception
         if (getAssignedDeskForCashier(cashier.getId()).isEmpty()) {
             throw new IllegalStateException("Cashier " + cashier.getName() + " is not assigned to an open cash desk.");
         }
@@ -215,6 +220,7 @@ public class Store {
         return r;
     }
 
+    // Calculates total revenue from all completed sales
     public BigDecimal turnover() {
         BigDecimal total = BigDecimal.ZERO;
         for (Receipt receipt : receipts) {
@@ -227,6 +233,7 @@ public class Store {
         return new HashMap<>(soldItems);
     }
 
+    // Calculates total monthly salary expenses for all cashiers
     public BigDecimal salaryExpenses() {
         BigDecimal total = BigDecimal.ZERO;
         for (Cashier cashier : cashiers) {
@@ -243,6 +250,7 @@ public class Store {
         return totalCostOfAllGoodsSupplied;
     }
 
+    // Calculates store profit: Revenue - Salary Expenses - Cost of Sold Goods
     public BigDecimal profit() {
         return turnover().subtract(salaryExpenses()).subtract(costOfSoldGoods);
     }

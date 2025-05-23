@@ -8,16 +8,16 @@ import org.informatics.exception.CashDeskOccupiedException;
 public class CashDesk implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private static int nextId = 1;
+    private static int nextId = 1;  // Auto-incrementing ID generator for all desks
 
     private final String id;
     private Cashier currentCashier;
-    private boolean isOpen;
+    private boolean isOpen;         // Desk is open only when a cashier is assigned
 
     public CashDesk() {
         this.id = "D" + nextId++;
         this.currentCashier = null;
-        this.isOpen = false; // A desk must be explicitly opened by a cashier
+        this.isOpen = false;
     }
 
     public String getId() {
@@ -32,11 +32,12 @@ public class CashDesk implements Serializable {
         return isOpen;
     }
 
+    // Different from isOpen: desk can be occupied but not open (edge case handling)
     public boolean isOccupied() {
         return currentCashier != null;
     }
 
-    //Assigns a cashier to this cash desk and checks if the cash desk is already occupied by another cashier
+    // Assigns cashier to desk, ensures only one cashier per desk
     public void assignCashier(Cashier cashier) throws CashDeskOccupiedException {
         if (this.currentCashier == null) {
             this.currentCashier = cashier;

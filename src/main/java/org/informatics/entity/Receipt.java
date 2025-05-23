@@ -43,7 +43,6 @@ public class Receipt implements Serializable {
     }
 
     public void add(Product product, int quantity, BigDecimal price) {
-        // Simple validation logic instead of checked exceptions
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");
         }
@@ -74,8 +73,7 @@ public class Receipt implements Serializable {
         COUNTER = 0;
     }
 
-
-     //Saves this receipt as both a .txt and a .ser file under the given directory.
+    // Saves receipt as both .txt and .ser files, creates directory if needed
     public void save(File dir) throws IOException {
         if (!dir.exists()) {
             if (!dir.mkdirs()) {

@@ -28,7 +28,7 @@ import org.informatics.exception.ProductNotFoundException;
 import org.informatics.exception.ProductExpiredException;
 import org.informatics.exception.InsufficientQuantityException;
 
-//Main application class demonstrating the store management system functionality.
+// Main application class demonstrating the store management system functionality
 public class StoreApplication {
 
     private final Store store;
@@ -287,101 +287,101 @@ public class StoreApplication {
     }
 
     private void makeSale() {
-        // 1. Select cashier
-        listCashiers();
-        String cashierId = getStringInput("Enter ID of cashier making the sale: ");
-        Cashier selectedCashier = cashDeskService.findCashierById(cashierId)
-                .orElse(null);
+        System.out.println("\n=== MAKE A SALE ===");
 
-        if (selectedCashier == null) {
-            System.out.println("Invalid cashier ID.");
+        // Select cashier
+        listCashiers();
+        String cashierId = getStringInput("Enter Cashier ID: ");
+
+        Optional<Cashier> cashierOpt = store.findCashierById(cashierId);
+        if (cashierOpt.isEmpty()) {
+            System.err.println("Cashier not found with ID: " + cashierId);
             return;
         }
+
+        Cashier cashier = cashierOpt.get();
 
         // Check if cashier is assigned to an active desk
-        Optional<CashDesk> activeDeskOpt = cashDeskService.getAssignedDeskForCashier(selectedCashier.getId());
-        if (activeDeskOpt.isEmpty()) {
-            System.out.println("Cashier " + selectedCashier.getName() + " is not currently assigned to an open cash desk.");
-            System.out.println("Please assign the cashier to a desk first (Option 4).");
+        Optional<CashDesk> assignedDesk = store.getAssignedDeskForCashier(cashierId);
+        if (assignedDesk.isEmpty()) {
+            System.err.println("Cashier " + cashier.getName() + " is not assigned to any open cash desk.");
+            System.err.println("Please assign the cashier to a desk first (Option 4).");
             return;
         }
-        System.out.println("Cashier " + selectedCashier.getName() + " is at desk " + activeDeskOpt.get().getId() + ".");
 
-        // 2. Create customer - simplified customer balance management
-        String customerId = "CU" + System.currentTimeMillis() % 10000;
-        String customerName = getStringInput("Enter customer name: ");
+        // Create customer with balance
         BigDecimal customerBalance = getCustomerBalanceInput();
+        Customer customer = new Customer("CUST-001", "Walk-in Customer", customerBalance);
 
-        System.out.printf("Initial customer balance: $%.2f\n", customerBalance);
-        
-        Customer customer = new Customer(customerId, customerName, customerBalance);
-
-        // 3. Create a receipt for the purchase
-        Receipt currentReceipt;
+        // Create receipt for the purchase
+        Receipt receipt;
         try {
-            currentReceipt = storeService.createReceipt(selectedCashier);
-        } catch (IllegalStateException e) {
-            System.err.println("Error: " + e.getMessage());
+            receipt = storeService.createReceipt(cashier);
+        } catch (Exception e) {
+            System.err.println("Error creating receipt: " + e.getMessage());
             return;
         }
 
         // Ensure we have a valid receipt before continuing
-        if (currentReceipt == null) {
-            System.err.println("Failed to create receipt. Sale cancelled.");
+        if (receipt == null) {
+            System.err.println("Failed to create receipt. Cannot proceed with sale.");
             return;
         }
 
-        // 4. Add products to receipt - simplified exception handling
-        boolean addMoreProducts = true;
-
-        while (addMoreProducts) {
+        // Add products to receipt
+        String choice;
+        do {
             try {
                 listProducts();
-                String productId = getStringInput("Enter product ID to add (or 'done' to finish): ");
-
-                if (productId.equalsIgnoreCase("done")) {
-                    addMoreProducts = false;
-                    
-                    // Simplified file operation
-                    try {
-                        storeService.saveReceipt(currentReceipt, receiptDir);
-                        System.out.println("\n--- FINAL RECEIPT ---");
-                        System.out.println(currentReceipt);
-                        System.out.println("---------------------");
-                        System.out.printf("Remaining customer balance: $%.2f\n", customer.getBalance());
-                    } catch (IOException e) {
-                        System.err.println("Error saving receipt: " + e.getMessage());
-                    }
-                    continue;
-                }
-
-                Product product = store.find(productId);
-                if (product == null) {
-                    System.out.println("Product not found.");
-                    continue;
-                }
-
+                String productId = getStringInput("Enter Product ID to add: ");
                 int quantity = getIntInput("Enter quantity: ");
-                if (quantity <= 0) {
-                    System.out.println("Quantity must be positive.");
-                    continue;
+
+                // Exception handling for business rule violations
+                try {
+                    storeService.addToReceipt(receipt, productId, quantity, customer);
+                    
+                    // Save receipt file after each addition
+                    try {
+                        receipt.save(receiptDir);
+                        System.out.println("Product added successfully to receipt.");
+                    } catch (IOException e) {
+                        System.err.println("Warning: Could not save receipt file: " + e.getMessage());
+                    }
+                } catch (InsufficientBudgetException e) {
+                    System.err.println("Insufficient customer funds: " + e.getMessage());
+                    
+                    // Graceful handling: complete sale with items already added
+                    if (!receipt.getLines().isEmpty()) {
+                        System.out.println("Customer can afford items already added to receipt.");
+                        System.out.println("Final Receipt:\n" + receipt);
+                        return;
+                    }
                 }
 
-                // Add to existing receipt
-                currentReceipt = storeService.addToReceipt(currentReceipt, productId, quantity, customer);
-
-                System.out.println("Product added successfully!");
-                System.out.println("Current receipt total: $" + String.format("%.2f", currentReceipt.total()));
-
-            // ОПРОСТЕН exception handling - използваме новата йерархия + конкретните exceptions
-            } catch (ProductNotFoundException | ProductExpiredException e) {
-                System.err.println("Product Error: " + e.getMessage());
-            } catch (InsufficientQuantityException e) {
-                System.err.println("Sale Error: " + e.getMessage());
-            } catch (InsufficientBudgetException e) {
-                System.err.println("Budget Error: " + e.getMessage());
-                addMoreProducts = false;
+                // Ask if user wants to add more items
+                choice = getStringInput("Add another product? (y/n): ").toLowerCase();
+            } catch (Exception e) {
+                System.err.println("Error processing sale: " + e.getMessage());
+                choice = "n";
             }
+        } while ("y".equals(choice) || "yes".equals(choice));
+
+        // Add to existing receipt
+        if (!receipt.getLines().isEmpty()) {
+            System.out.println("\n=== FINAL RECEIPT ===");
+            System.out.println(receipt);
+            
+            try {
+                // Save final receipt
+                receipt.save(receiptDir);
+                System.out.println("Receipt saved successfully.");
+            } catch (ProductNotFoundException | ProductExpiredException e) {
+                System.err.println("Sale error: " + e.getMessage());
+            } catch (IOException e) {
+                System.err.println("Warning: Could not save receipt file: " + e.getMessage());
+            }
+        } else {
+            System.out.println("No items were added to the receipt.");
         }
     }
 
@@ -440,6 +440,7 @@ public class StoreApplication {
         }
     }
 
+    // Input validation with retry loop for integer values
     private int getIntInput(String prompt) {
         System.out.print(prompt);
         while (!scanner.hasNextInt()) {
@@ -452,6 +453,7 @@ public class StoreApplication {
         return value;
     }
 
+    // Input validation with retry loop for BigDecimal values
     private BigDecimal getCustomerBalanceInput() {
         System.out.print("Enter customer balance: $");
         while (!scanner.hasNextBigDecimal()) {
