@@ -349,7 +349,7 @@ public class StoreApplication {
                 } catch (InsufficientBudgetException e) {
                     System.err.println("Insufficient customer funds: " + e.getMessage());
 
-                    // Graceful handling: complete sale with items already added
+                    // Complete sale with items already added
                     if (!receipt.getLines().isEmpty()) {
                         System.out.println("Customer can afford items already added to receipt.");
                         System.out.println("Final Receipt:\n" + receipt);
