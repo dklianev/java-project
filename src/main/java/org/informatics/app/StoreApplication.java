@@ -24,9 +24,6 @@ import org.informatics.service.impl.FileServiceImpl;
 import org.informatics.service.impl.GoodsServiceImpl;
 import org.informatics.service.impl.StoreServiceImpl;
 import org.informatics.store.Store;
-import org.informatics.exception.ProductNotFoundException;
-import org.informatics.exception.ProductExpiredException;
-import org.informatics.exception.InsufficientQuantityException;
 
 // Main application class demonstrating the store management system functionality
 public class StoreApplication {
@@ -336,7 +333,6 @@ public class StoreApplication {
                 String productId = getStringInput("Enter Product ID to add: ");
                 int quantity = getIntInput("Enter quantity: ");
 
-                // Exception handling for business rule violations
                 try {
                     storeService.addToReceipt(receipt, productId, quantity, customer);
                     
@@ -375,8 +371,6 @@ public class StoreApplication {
                 // Save final receipt
                 receipt.save(receiptDir);
                 System.out.println("Receipt saved successfully.");
-            } catch (ProductNotFoundException | ProductExpiredException e) {
-                System.err.println("Sale error: " + e.getMessage());
             } catch (IOException e) {
                 System.err.println("Warning: Could not save receipt file: " + e.getMessage());
             }

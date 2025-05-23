@@ -182,13 +182,13 @@ public class ExceptionTest {
     void testShouldThrowIllegalArgumentExceptionForNegativeMarkup() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
             () -> new StoreConfig(new BigDecimal("-0.1"), new BigDecimal("0.25"), 3, new BigDecimal("0.30")));
-        assertEquals("Markups and discount percentage must be non-negative, discount <= 1.", exception.getMessage());
+        assertEquals("Groceries markup cannot be negative", exception.getMessage());
     }
     
     @Test
     void testShouldThrowIllegalArgumentExceptionForNegativeDays() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
             () -> new StoreConfig(new BigDecimal("0.2"), new BigDecimal("0.25"), -1, new BigDecimal("0.30")));
-        assertEquals("Days for near expiry discount cannot be negative.", exception.getMessage());
+        assertEquals("Days for near expiry discount cannot be negative", exception.getMessage());
     }
 }

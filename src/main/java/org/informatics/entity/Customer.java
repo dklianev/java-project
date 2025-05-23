@@ -20,8 +20,4 @@ public class Customer extends Person {
         }
         balance = balance.subtract(amt);
     }
-    
-    public BigDecimal getBalance() {
-        return balance;
-    }
 }

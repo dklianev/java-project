@@ -32,7 +32,7 @@ public class CashDesk implements Serializable {
         return isOpen;
     }
 
-    // Different from isOpen: desk can be occupied but not open (edge case handling)
+    // Different from isOpen: desk can be occupied but not open
     public boolean isOccupied() {
         return currentCashier != null;
     }
