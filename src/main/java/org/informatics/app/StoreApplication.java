@@ -19,6 +19,9 @@ import org.informatics.entity.NonFoodProduct;
 import org.informatics.entity.Product;
 import org.informatics.entity.Receipt;
 import org.informatics.exception.InsufficientBudgetException;
+import org.informatics.exception.InsufficientQuantityException;
+import org.informatics.exception.ProductExpiredException;
+import org.informatics.exception.ProductNotFoundException;
 import org.informatics.service.impl.CashdeskServiceImpl;
 import org.informatics.service.impl.FileServiceImpl;
 import org.informatics.service.impl.GoodsServiceImpl;
@@ -45,19 +48,19 @@ public class StoreApplication {
                     5, // 5 days before expiry for discount
                     new BigDecimal("0.30") // 30% discount for near-expiry items
             );
-            
+
             store = new Store(config);
         } catch (Exception e) {
             System.err.println("Error initializing store configuration: " + e.getMessage());
             throw new RuntimeException("Failed to initialize store", e);
         }
-        
+
         goodsService = new GoodsServiceImpl(store);
         cashDeskService = new CashdeskServiceImpl(store);
         storeService = new StoreServiceImpl(store);
         fileService = new FileServiceImpl();
         scanner = new Scanner(System.in);
-        
+
         // Simplified directory creation
         receiptDir = new File("receipts");
         if (!receiptDir.exists()) {
@@ -128,7 +131,7 @@ public class StoreApplication {
 
         System.out.println("Store initialized with sample data.");
     }
-    
+
     private void addProductSafely(Product product) {
         if (!goodsService.addProduct(product)) {
             System.err.println("Warning: Product with ID " + product.getId() + " already exists, skipping.");
@@ -335,7 +338,7 @@ public class StoreApplication {
 
                 try {
                     storeService.addToReceipt(receipt, productId, quantity, customer);
-                    
+
                     // Save receipt file after each addition
                     try {
                         receipt.save(receiptDir);
@@ -345,18 +348,24 @@ public class StoreApplication {
                     }
                 } catch (InsufficientBudgetException e) {
                     System.err.println("Insufficient customer funds: " + e.getMessage());
-                    
+
                     // Graceful handling: complete sale with items already added
                     if (!receipt.getLines().isEmpty()) {
                         System.out.println("Customer can afford items already added to receipt.");
                         System.out.println("Final Receipt:\n" + receipt);
                         return;
                     }
+                } catch (ProductNotFoundException e) {
+                    System.err.println("Product not found: " + e.getMessage());
+                } catch (ProductExpiredException e) {
+                    System.err.println("Product expired: " + e.getMessage());
+                } catch (InsufficientQuantityException e) {
+                    System.err.println("Insufficient quantity: " + e.getMessage());
                 }
 
                 // Ask if user wants to add more items
                 choice = getStringInput("Add another product? (y/n): ").toLowerCase();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 System.err.println("Error processing sale: " + e.getMessage());
                 choice = "n";
             }
@@ -366,7 +375,7 @@ public class StoreApplication {
         if (!receipt.getLines().isEmpty()) {
             System.out.println("\n=== FINAL RECEIPT ===");
             System.out.println(receipt);
-            
+
             try {
                 // Save final receipt
                 receipt.save(receiptDir);
@@ -383,7 +392,7 @@ public class StoreApplication {
         System.out.println("\n=== FINANCIAL STATUS ===");
         System.out.printf("Total turnover (Revenue)         : $%.2f\n", store.turnover());
         System.out.printf("Cost of goods sold (COGS)      : $%.2f\n", store.costOfSoldGoods());
-        System.out.printf("Gross Profit (Turnover - COGS) : $%.2f\n", 
+        System.out.printf("Gross Profit (Turnover - COGS) : $%.2f\n",
                 store.turnover().subtract(store.costOfSoldGoods()));
         System.out.printf("Monthly salary costs             : $%.2f\n", store.salaryExpenses());
         System.out.printf("Operating Profit                 : $%.2f\n", store.profit());

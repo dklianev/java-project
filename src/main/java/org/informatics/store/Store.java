@@ -75,9 +75,9 @@ public class Store {
 
         // Release cashier from current desk before reassigning
         cashDesks.stream()
-            .filter(d -> d.getCurrentCashier() != null && d.getCurrentCashier().getId().equals(cashierId))
-            .findFirst()
-            .ifPresent(CashDesk::releaseCashier);
+                .filter(d -> d.getCurrentCashier() != null && d.getCurrentCashier().getId().equals(cashierId))
+                .findFirst()
+                .ifPresent(CashDesk::releaseCashier);
 
         try {
             desk.assignCashier(cashier);
@@ -103,8 +103,8 @@ public class Store {
     }
 
     /**
-     * Adds a product to the store inventory.
-     * Returns true if successful, false if product with same ID already exists.
+     * Adds a product to the store inventory. Returns true if successful, false
+     * if product with same ID already exists.
      */
     public boolean addProduct(Product p) {
         if (inventory.containsKey(p.getId())) {
@@ -136,7 +136,7 @@ public class Store {
     // Processes sale transaction: validates business rules, updates inventory, handles payment
     public Receipt sell(Cashier cashier, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException, IOException {
-        
+
         if (qty <= 0) {
             throw new IllegalArgumentException("Quantity must be positive: " + qty);
         }
@@ -144,7 +144,7 @@ public class Store {
         if (getAssignedDeskForCashier(cashier.getId()).isEmpty()) {
             throw new IllegalStateException("Cashier " + cashier.getName() + " is not assigned to an open cash desk.");
         }
-        
+
         Product p = inventory.get(productId);
         if (p == null) {
             throw new ProductNotFoundException(productId);
@@ -177,11 +177,11 @@ public class Store {
 
     public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
-        
+
         if (qty <= 0) {
             throw new IllegalArgumentException("Quantity must be positive: " + qty);
         }
-        
+
         Product p = inventory.get(productId);
         if (p == null) {
             throw new ProductNotFoundException(productId);
@@ -214,7 +214,7 @@ public class Store {
         if (getAssignedDeskForCashier(cashier.getId()).isEmpty()) {
             throw new IllegalStateException("Cashier " + cashier.getName() + " is not assigned to an open cash desk.");
         }
-        
+
         Receipt r = new Receipt(cashier);
         receipts.add(r);
         return r;

@@ -22,11 +22,11 @@ public class FileServiceImpl implements FileService {
         }
 
         File[] files = dir.listFiles((File dir1, String name) -> name.endsWith(".ser"));
-        
+
         if (files == null) {
             return list;
         }
-        
+
         for (File file : files) {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
                 Receipt receipt = (Receipt) ois.readObject();

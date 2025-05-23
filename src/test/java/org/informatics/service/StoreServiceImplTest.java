@@ -16,12 +16,12 @@ import org.informatics.store.Store;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class StoreServiceImplTest {
 
@@ -78,9 +78,9 @@ public class StoreServiceImplTest {
         String productId = "P1";
         int quantity = 2;
         ProductNotFoundException expectedException = new ProductNotFoundException("P1");
-        
+
         doThrow(expectedException)
-            .when(mockStore).sell(mockCashier, productId, quantity, mockCustomer);
+                .when(mockStore).sell(mockCashier, productId, quantity, mockCustomer);
 
         try {
             // Act
@@ -109,7 +109,7 @@ public class StoreServiceImplTest {
         // Arrange
         File mockDir = mock(File.class);
         IOException expectedException = new IOException("Save failed");
-        
+
         doThrow(expectedException).when(mockReceipt).save(mockDir);
 
         try {
@@ -140,4 +140,3 @@ public class StoreServiceImplTest {
         verify(mockStore).addToReceipt(mockReceipt, productId, quantity, mockCustomer);
     }
 }
-

@@ -9,6 +9,7 @@ import org.informatics.config.StoreConfig;
 import org.informatics.util.GoodsType;
 
 public class Product implements Serializable {
+
     @Serial
     private static final long serialVersionUID = 1L;
     private final String id;
@@ -64,9 +65,9 @@ public class Product implements Serializable {
     // Calculates sale price: applies markup, then near-expiry discount if applicable
     public BigDecimal salePrice(StoreConfig cfg, LocalDate today) {
         // Apply category-specific markup
-        BigDecimal markup = type == GoodsType.GROCERIES ? 
-                cfg.groceriesMarkup() : cfg.nonFoodsMarkup();
-        
+        BigDecimal markup = type == GoodsType.GROCERIES
+                ? cfg.groceriesMarkup() : cfg.nonFoodsMarkup();
+
         BigDecimal price = purchasePrice.multiply(
                 BigDecimal.ONE.add(markup));
 

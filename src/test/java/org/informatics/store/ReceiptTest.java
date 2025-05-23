@@ -41,13 +41,13 @@ public class ReceiptTest {
         try {
             // Reset the receipt counter before each test
             Receipt.resetCounter();
-            
+
             // Common setup for all tests
             StoreConfig config = new StoreConfig(
-                new BigDecimal("0.20"), 
-                new BigDecimal("0.25"), 
-                3, 
-                new BigDecimal("0.30")
+                    new BigDecimal("0.20"),
+                    new BigDecimal("0.25"),
+                    3,
+                    new BigDecimal("0.30")
             );
             store = new Store(config);
             cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
@@ -119,7 +119,7 @@ public class ReceiptTest {
             assertEquals(cashier, receipt1.getCashier(), "Receipt should have the correct cashier");
             assertEquals(1, receipt1.getLines().size(), "Receipt should have one product line");
 
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException 
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
                 | InsufficientBudgetException | IOException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
@@ -164,7 +164,7 @@ public class ReceiptTest {
             List<Receipt> loadedReceipts = fileService.loadAll(tempDir);
             assertEquals(2, loadedReceipts.size(), "Should load all receipts from directory");
 
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException 
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
                 | InsufficientBudgetException | IOException | ClassNotFoundException e) {
             fail("Test failed with exception: " + e.getMessage());
         }

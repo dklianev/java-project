@@ -29,10 +29,10 @@ public class FinancialTest {
     public void setUp() {
         try {
             StoreConfig config = new StoreConfig(
-                new BigDecimal("0.20"), 
-                new BigDecimal("0.25"), 
-                3, 
-                new BigDecimal("0.30")
+                    new BigDecimal("0.20"),
+                    new BigDecimal("0.25"),
+                    3,
+                    new BigDecimal("0.30")
             );
             store = new Store(config);
             cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
@@ -68,10 +68,10 @@ public class FinancialTest {
             BigDecimal expectedTurnover = new BigDecimal("14.70");
             BigDecimal actualTurnover = store.turnover();
 
-            assertEquals(0, expectedTurnover.compareTo(actualTurnover), 
-                "Turnover should be calculated correctly based on sale prices");
+            assertEquals(0, expectedTurnover.compareTo(actualTurnover),
+                    "Turnover should be calculated correctly based on sale prices");
 
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException 
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
                 | InsufficientBudgetException | IOException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
@@ -92,10 +92,10 @@ public class FinancialTest {
             BigDecimal expectedCost = new BigDecimal("9.0");
             BigDecimal actualCost = store.costOfSoldGoods();
 
-            assertEquals(0, expectedCost.compareTo(actualCost), 
-                "Cost of sold goods should be calculated based on purchase prices");
+            assertEquals(0, expectedCost.compareTo(actualCost),
+                    "Cost of sold goods should be calculated based on purchase prices");
 
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException 
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
                 | InsufficientBudgetException | IOException e) {
             fail("Test failed with exception: " + e.getMessage());
         }
@@ -111,8 +111,8 @@ public class FinancialTest {
         BigDecimal expectedSalary = new BigDecimal("3000");
         BigDecimal actualSalary = store.salaryExpenses();
 
-        assertEquals(0, expectedSalary.compareTo(actualSalary), 
-            "Salary expenses should be sum of all cashier salaries");
+        assertEquals(0, expectedSalary.compareTo(actualSalary),
+                "Salary expenses should be sum of all cashier salaries");
     }
 
     @Test
@@ -128,10 +128,10 @@ public class FinancialTest {
             BigDecimal expectedProfit = new BigDecimal("12.00").subtract(new BigDecimal("1000")).subtract(new BigDecimal("10.00"));
             BigDecimal actualProfit = store.profit();
 
-            assertEquals(0, expectedProfit.compareTo(actualProfit), 
-                "Profit should be turnover minus salary expenses minus cost of sold goods");
+            assertEquals(0, expectedProfit.compareTo(actualProfit),
+                    "Profit should be turnover minus salary expenses minus cost of sold goods");
 
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException 
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
                 | InsufficientBudgetException | IOException e) {
             fail("Test failed with exception: " + e.getMessage());
         }

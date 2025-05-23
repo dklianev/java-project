@@ -31,10 +31,10 @@ public class ServiceLayerTest {
     public void setUp() {
         try {
             StoreConfig config = new StoreConfig(
-                new BigDecimal("0.20"), 
-                new BigDecimal("0.25"), 
-                3, 
-                new BigDecimal("0.30")
+                    new BigDecimal("0.20"),
+                    new BigDecimal("0.25"),
+                    3,
+                    new BigDecimal("0.30")
             );
             Store store = new Store(config);
             goodsService = new GoodsServiceImpl(store);
@@ -53,7 +53,7 @@ public class ServiceLayerTest {
 
         boolean result1 = goodsService.addProduct(product1);
         boolean result2 = goodsService.addProduct(product2);
-        
+
         assertTrue(result1, "First product should be added successfully");
         assertTrue(result2, "Second product should be added successfully");
 
@@ -110,11 +110,11 @@ public class ServiceLayerTest {
     void testStoreServiceOperations() {
         // Setup
         Cashier cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
-        
+
         cashdeskService.addCashier(cashier);
         CashDesk desk = new CashDesk();
         cashdeskService.addCashDesk(desk);
-        
+
         try {
             cashdeskService.assignCashierToDesk(cashier.getId(), desk.getId());
         } catch (Exception e) {

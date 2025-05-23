@@ -40,12 +40,12 @@ public class FileServiceTest {
     public void setUp() {
         try {
             Receipt.resetCounter();
-            
+
             StoreConfig config = new StoreConfig(
-                new BigDecimal("0.20"), 
-                new BigDecimal("0.25"), 
-                3, 
-                new BigDecimal("0.30")
+                    new BigDecimal("0.20"),
+                    new BigDecimal("0.25"),
+                    3,
+                    new BigDecimal("0.30")
             );
             store = new Store(config);
             cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
@@ -100,7 +100,7 @@ public class FileServiceTest {
             assertTrue(txtFile.exists(), "Text file should exist");
             assertTrue(serFile.exists(), "Serialized file should exist");
 
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException 
+        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
                 | InsufficientBudgetException | IOException | ClassNotFoundException e) {
             fail("Test failed with exception: " + e.getMessage());
         }

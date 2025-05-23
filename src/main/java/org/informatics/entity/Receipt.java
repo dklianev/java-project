@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Receipt implements Serializable {
+
     @Serial
     private static final long serialVersionUID = 1L;
     private static int COUNTER = 0;
@@ -52,7 +53,7 @@ public class Receipt implements Serializable {
         if (price.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
         }
-        
+
         lines.add(new Line(product, quantity, price));
     }
 
@@ -68,7 +69,7 @@ public class Receipt implements Serializable {
     public static int getReceiptCount() {
         return COUNTER;
     }
-    
+
     public static void resetCounter() {
         COUNTER = 0;
     }
@@ -80,7 +81,7 @@ public class Receipt implements Serializable {
                 throw new IOException("Unable to create directory for receipts: " + dir.getAbsolutePath());
             }
         }
-        
+
         // Write human-readable text file
         File txtFile = new File(dir, "receipt-" + number + ".txt");
         try (PrintWriter pw = new PrintWriter(txtFile)) {
@@ -103,23 +104,24 @@ public class Receipt implements Serializable {
         sb.append("Cashier: ").append(cashier.getName()).append(" (ID: ").append(cashier.getId()).append(")\n");
         sb.append("----------------------------------------\n");
         sb.append("ITEMS:\n");
-        
+
         for (Line line : lines) {
             BigDecimal lineTotal = line.price().multiply(BigDecimal.valueOf(line.quantity()));
-            sb.append(String.format("%-20s %3d x %7.2f = %8.2f\n", 
+            sb.append(String.format("%-20s %3d x %7.2f = %8.2f\n",
                     line.product().getName(),
                     line.quantity(),
                     line.price(),
                     lineTotal));
         }
-        
+
         sb.append("----------------------------------------\n");
         sb.append(String.format("TOTAL: %33.2f\n", total()));
         return sb.toString();
     }
 
     public record Line(Product product, int quantity, BigDecimal price) implements Serializable {
-            @Serial
-            private static final long serialVersionUID = 1L;
+
+        @Serial
+        private static final long serialVersionUID = 1L;
     }
 }
