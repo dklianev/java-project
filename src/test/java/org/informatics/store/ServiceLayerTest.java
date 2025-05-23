@@ -2,6 +2,7 @@ package org.informatics.store;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.informatics.config.StoreConfig;
 import org.informatics.entity.CashDesk;
@@ -13,10 +14,13 @@ import org.informatics.exception.DuplicateProductException;
 import org.informatics.exception.InvalidConfigurationException;
 import org.informatics.service.impl.CashdeskServiceImpl;
 import org.informatics.service.impl.GoodsServiceImpl;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceLayerTest {
 
@@ -87,7 +91,9 @@ public class ServiceLayerTest {
         assertEquals(1, cashDeskService.listCashDesks().size(), "CashDeskService should list one cash desk");
 
         // Find cashier by ID
-        assertEquals(bob, cashDeskService.findCashierById("C1").orElse(null), "Should find cashier by ID");
+        Optional<Cashier> foundCashier = cashDeskService.findCashierById("C1");
+        assertTrue(foundCashier.isPresent());
+        assertEquals(bob.getId(), foundCashier.get().getId());
     }
 
     @Test
@@ -104,8 +110,10 @@ public class ServiceLayerTest {
             cashDeskService.assignCashierToDesk(bob.getId(), desk.getId());
 
             // Verify assignment
-            assertEquals(bob, cashDeskService.getAssignedDeskForCashier(bob.getId())
-                    .orElseThrow().getCurrentCashier(), "Cashier should be assigned to desk");
+            Optional<CashDesk> assignedDesk = cashDeskService.getAssignedDeskForCashier(bob.getId());
+            assertTrue(assignedDesk.isPresent());
+            assertNotNull(assignedDesk.get().getCurrentCashier());
+            assertEquals(bob.getId(), assignedDesk.get().getCurrentCashier().getId());
 
             // Release cashier from desk
             cashDeskService.releaseCashierFromDesk(desk.getId());

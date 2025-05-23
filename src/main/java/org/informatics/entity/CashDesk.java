@@ -54,9 +54,4 @@ public class CashDesk implements Serializable {
             this.isOpen = false;
         }
     }
-
-    @Override
-    public String toString() {
-        return "CashDesk [id=" + id + ", currentCashier=" + (currentCashier != null ? currentCashier.getName() : "None") + ", isOpen=" + isOpen + "]";
-    }
 } 
