@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import org.informatics.config.StoreConfig;
 import org.informatics.util.GoodsType;
 
-public class Product implements Serializable, Comparable<Product> {
+public class Product implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private final String id;
@@ -73,24 +73,6 @@ public class Product implements Serializable, Comparable<Product> {
         }
 
         return price;
-    }
-
-    @Override
-    public int compareTo(Product o) {
-        return name.compareToIgnoreCase(o.name);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof Product p) {
-            return id.equals(p.id);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
     }
 
     @Override
