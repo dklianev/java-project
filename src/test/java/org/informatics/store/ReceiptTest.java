@@ -1,7 +1,6 @@
 package org.informatics.store;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -13,13 +12,10 @@ import org.informatics.entity.Customer;
 import org.informatics.entity.FoodProduct;
 import org.informatics.entity.NonFoodProduct;
 import org.informatics.entity.Receipt;
-import org.informatics.exception.InsufficientBudgetException;
-import org.informatics.exception.InsufficientQuantityException;
-import org.informatics.exception.ProductExpiredException;
-import org.informatics.exception.ProductNotFoundException;
 import org.informatics.service.impl.FileServiceImpl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,154 +33,189 @@ public class ReceiptTest {
     File tempDir;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
+        Receipt.resetCounter();
+        StoreConfig config = new StoreConfig(
+                new BigDecimal("0.20"), // 20% food markup
+                new BigDecimal("0.25"), // 25% non-food markup
+                3, // near expiry days
+                new BigDecimal("0.30") // near expiry discount
+        );
+        store = new Store(config);
+        cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
+        customer = new Customer("CU1", "Test Customer", new BigDecimal("500"));
+        fileService = new FileServiceImpl();
+
+        store.addCashier(cashier);
+        CashDesk cashDesk = new CashDesk();
+        store.addCashDesk(cashDesk);
+
         try {
-            // Reset the receipt counter before each test
-            Receipt.resetCounter();
-
-            // Common setup for all tests
-            StoreConfig config = new StoreConfig(
-                    new BigDecimal("0.20"),
-                    new BigDecimal("0.25"),
-                    3,
-                    new BigDecimal("0.30")
-            );
-            store = new Store(config);
-            cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
-            customer = new Customer("CU1", "Test Customer", new BigDecimal("200"));
-            fileService = new FileServiceImpl();
-
-            // Create cash desk and assign cashier
-            CashDesk cashDesk = new CashDesk();
-            store.addCashier(cashier);
-            store.addCashDesk(cashDesk);
-
-            try {
-                store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
-            } catch (Exception e) {
-                fail("Failed to set up test environment: " + e.getMessage());
-            }
-        } catch (IllegalArgumentException e) {
-            fail("Failed to set up store configuration: " + e.getMessage());
+            store.assignCashierToDesk(cashier.getId(), cashDesk.getId());
+        } catch (Exception e) {
+            fail("Failed to set up test environment: " + e.getMessage());
         }
     }
 
     @Test
-    void testReceiptCreationAndFields() {
+    void testReceiptCreationWithCashier() {
         Receipt receipt = new Receipt(cashier);
 
-        assertEquals(cashier, receipt.getCashier(), "Receipt should have the correct cashier");
-        assertNotNull(receipt.getTime(), "Receipt should have a timestamp");
-        assertTrue(receipt.getNumber() > 0, "Receipt should have a positive receipt number");
-        assertEquals(0, receipt.getLines().size(), "New receipt should have no items");
-        assertEquals(BigDecimal.ZERO, receipt.total(), "New receipt should have zero total");
+        assertEquals(cashier, receipt.getCashier());
+        assertNotNull(receipt.getTime());
+        assertTrue(receipt.getNumber() > 0);
     }
 
     @Test
-    void testReceiptAddItemAndTotal() {
-        try {
-            // Create a receipt and add items
-            Receipt receipt = new Receipt(cashier);
+    void testReceiptWithNoItems() {
+        Receipt receipt = new Receipt(cashier);
 
-            // Add a product to the receipt
-            BigDecimal price = new BigDecimal("2.50");
-            receipt.add(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 5), 2, price);
-
-            // Check the receipt details
-            assertEquals(1, receipt.getLines().size(), "Receipt should have one item");
-            assertEquals(price.multiply(new BigDecimal("2")), receipt.total(), "Receipt total should be calculated correctly");
-        } catch (IllegalArgumentException e) {
-            fail("Test failed with exception: " + e.getMessage());
-        }
+        assertEquals(0, receipt.getLines().size());
+        assertEquals(BigDecimal.ZERO, receipt.total());
     }
 
     @Test
-    void testReceiptGenerationAfterSale() {
-        try {
-            // Add products to the store
-            store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 10));
-            store.addProduct(new NonFoodProduct("N1", "Soap", new BigDecimal("3.0"), LocalDate.now().plusYears(1), 5));
+    void testReceiptWithSingleItem() {
+        Receipt receipt = new Receipt(cashier);
+        FoodProduct product = new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 5);
+        BigDecimal price = new BigDecimal("2.50");
 
-            // Sell products and get the receipt
-            Receipt receipt1 = store.sell(cashier, "F1", 2, customer);
-            Receipt receipt2 = store.sell(cashier, "N1", 1, customer);
+        receipt.add(product, 2, price);
 
-            // Check receipt counts
-            assertEquals(2, Receipt.getReceiptCount(), "Receipt counter should be incremented");
-            assertEquals(2, store.listReceipts().size(), "Store should track all receipts");
-
-            // Validate the receipts
-            assertNotNull(receipt1, "Receipt should be generated after sale");
-            assertNotNull(receipt2, "Receipt should be generated after sale");
-            assertEquals(cashier, receipt1.getCashier(), "Receipt should have the correct cashier");
-            assertEquals(1, receipt1.getLines().size(), "Receipt should have one product line");
-
-                } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException                | InsufficientBudgetException e) {
-            fail("Test failed with exception: " + e.getMessage());
-        }
+        assertEquals(1, receipt.getLines().size());
+        assertEquals(price.multiply(new BigDecimal("2")), receipt.total());
     }
 
     @Test
-    void testReceiptSaveAndLoad() {
-        try {
-            // Add products to store
-            store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 10));
-            store.addProduct(new NonFoodProduct("N1", "Soap", new BigDecimal("3.0"), LocalDate.now().plusYears(1), 5));
+    void testReceiptWithMultipleItems() {
+        Receipt receipt = new Receipt(cashier);
+        FoodProduct milk = new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 5);
+        NonFoodProduct soap = new NonFoodProduct("N1", "Soap", new BigDecimal("3.00"), LocalDate.now().plusYears(1), 3);
 
-            // Make sales and get receipts
-            Receipt receipt1 = store.sell(cashier, "F1", 2, customer);
-            Receipt receipt2 = store.sell(cashier, "N1", 1, customer);
+        receipt.add(milk, 2, new BigDecimal("2.40"));
+        receipt.add(soap, 1, new BigDecimal("3.75"));
 
-            // Save receipts
-            receipt1.save(tempDir);
-            receipt2.save(tempDir);
-
-            // Verify files were created
-            File textFile1 = new File(tempDir, "receipt-" + receipt1.getNumber() + ".txt");
-            File serFile1 = new File(tempDir, "receipt-" + receipt1.getNumber() + ".ser");
-            File textFile2 = new File(tempDir, "receipt-" + receipt2.getNumber() + ".txt");
-            File serFile2 = new File(tempDir, "receipt-" + receipt2.getNumber() + ".ser");
-
-            assertTrue(textFile1.exists(), "Text receipt file should be created");
-            assertTrue(serFile1.exists(), "Serialized receipt file should be created");
-            assertTrue(textFile2.exists(), "Text receipt file should be created");
-            assertTrue(serFile2.exists(), "Serialized receipt file should be created");
-
-            // Load receipts back
-            Receipt loadedReceipt = fileService.load(tempDir, receipt1.getNumber());
-
-            assertNotNull(loadedReceipt, "Should be able to load saved receipt");
-            assertEquals(receipt1.getNumber(), loadedReceipt.getNumber(), "Loaded receipt should have the same number");
-            assertEquals(receipt1.getCashier().getId(), loadedReceipt.getCashier().getId(), "Loaded receipt should have the same cashier");
-            assertEquals(receipt1.getLines().size(), loadedReceipt.getLines().size(), "Loaded receipt should have the same number of items");
-            assertEquals(receipt1.total(), loadedReceipt.total(), "Loaded receipt should have the same total");
-
-            // Load all receipts
-            List<Receipt> loadedReceipts = fileService.loadAll(tempDir);
-            assertEquals(2, loadedReceipts.size(), "Should load all receipts from directory");
-
-        } catch (ProductNotFoundException | ProductExpiredException | InsufficientQuantityException
-                | InsufficientBudgetException | IOException | ClassNotFoundException e) {
-            fail("Test failed with exception: " + e.getMessage());
-        }
+        assertEquals(2, receipt.getLines().size());
+        assertEquals(new BigDecimal("8.55"), receipt.total()); // 2*2.40 + 1*3.75
     }
 
     @Test
-    void testReceiptToString() {
-        try {
-            Receipt receipt = new Receipt(cashier);
-            receipt.add(new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 5), 2, new BigDecimal("2.50"));
+    void testReceiptGeneratedAfterSale() throws Exception {
+        store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 10));
 
-            String receiptString = receipt.toString();
+        Receipt receipt = store.sell(cashier, "F1", 2, customer);
 
-            assertNotNull(receiptString, "Receipt toString should not be null");
-            assertTrue(receiptString.contains("RECEIPT #"), "Receipt should include receipt number");
-            assertTrue(receiptString.contains("Date:"), "Receipt should include date");
-            assertTrue(receiptString.contains("Cashier:"), "Receipt should include cashier");
-            assertTrue(receiptString.contains("Milk"), "Receipt should include product name");
-            assertTrue(receiptString.contains("TOTAL:"), "Receipt should include total");
-        } catch (IllegalArgumentException e) {
-            fail("Test failed with exception: " + e.getMessage());
-        }
+        assertNotNull(receipt);
+        assertEquals(cashier, receipt.getCashier());
+        assertEquals(1, receipt.getLines().size());
+    }
+
+    @Test
+    void testReceiptCounterIncrement() throws Exception {
+        store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 10));
+
+        Receipt receipt1 = store.sell(cashier, "F1", 1, customer);
+        Receipt receipt2 = store.sell(cashier, "F1", 1, customer);
+
+        assertEquals(2, Receipt.getReceiptCount());
+        assertEquals(2, store.listReceipts().size());
+        assertTrue(receipt2.getNumber() > receipt1.getNumber());
+    }
+
+    @Test
+    void testReceiptSaveAsTextFile() throws Exception {
+        store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 10));
+        Receipt receipt = store.sell(cashier, "F1", 2, customer);
+
+        receipt.save(tempDir);
+
+        File textFile = new File(tempDir, "receipt-" + receipt.getNumber() + ".txt");
+        assertTrue(textFile.exists());
+    }
+
+    @Test
+    void testReceiptSaveAsSerializedFile() throws Exception {
+        store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 10));
+        Receipt receipt = store.sell(cashier, "F1", 2, customer);
+
+        receipt.save(tempDir);
+
+        File serFile = new File(tempDir, "receipt-" + receipt.getNumber() + ".ser");
+        assertTrue(serFile.exists());
+    }
+
+    @Test
+    void testReceiptLoadFromSerializedFile() throws Exception {
+        store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 10));
+        Receipt originalReceipt = store.sell(cashier, "F1", 2, customer);
+        originalReceipt.save(tempDir);
+
+        Receipt loadedReceipt = fileService.load(tempDir, originalReceipt.getNumber());
+
+        assertNotNull(loadedReceipt);
+        assertEquals(originalReceipt.getNumber(), loadedReceipt.getNumber());
+        assertEquals(originalReceipt.getCashier().getId(), loadedReceipt.getCashier().getId());
+        assertEquals(originalReceipt.getLines().size(), loadedReceipt.getLines().size());
+        assertEquals(originalReceipt.total(), loadedReceipt.total());
+    }
+
+    @Test
+    void testLoadAllReceiptsFromDirectory() throws Exception {
+        store.addProduct(new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 10));
+        store.addProduct(new NonFoodProduct("N1", "Soap", new BigDecimal("3.00"), LocalDate.now().plusYears(1), 5));
+
+        Receipt receipt1 = store.sell(cashier, "F1", 2, customer);
+        Receipt receipt2 = store.sell(cashier, "N1", 1, customer);
+        receipt1.save(tempDir);
+        receipt2.save(tempDir);
+
+        List<Receipt> loadedReceipts = fileService.loadAll(tempDir);
+
+        assertEquals(2, loadedReceipts.size());
+    }
+
+    @Test
+    void testReceiptToStringContainsRequiredFields() {
+        Receipt receipt = new Receipt(cashier);
+        FoodProduct product = new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 5);
+        receipt.add(product, 2, new BigDecimal("2.50"));
+
+        String receiptString = receipt.toString();
+
+        assertNotNull(receiptString);
+        assertTrue(receiptString.contains("RECEIPT #"));
+        assertTrue(receiptString.contains("Date:"));
+        assertTrue(receiptString.contains("Cashier:"));
+        assertTrue(receiptString.contains("Milk"));
+        assertTrue(receiptString.contains("TOTAL:"));
+    }
+
+    @Test
+    void testReceiptWithNullProductThrowsException() {
+        Receipt receipt = new Receipt(cashier);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> receipt.add(null, 1, BigDecimal.ONE));
+        assertEquals("Product cannot be null", exception.getMessage());
+    }
+
+    @Test
+    void testReceiptWithNegativeQuantityThrowsException() {
+        Receipt receipt = new Receipt(cashier);
+        FoodProduct product = new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 5);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> receipt.add(product, 0, BigDecimal.ONE));
+        assertEquals("Quantity must be positive", exception.getMessage());
+    }
+
+    @Test
+    void testReceiptWithNegativePriceThrowsException() {
+        Receipt receipt = new Receipt(cashier);
+        FoodProduct product = new FoodProduct("F1", "Milk", new BigDecimal("2.00"), LocalDate.now().plusDays(10), 5);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> receipt.add(product, 1, new BigDecimal("-1.0")));
+        assertEquals("Price cannot be negative", exception.getMessage());
     }
 }

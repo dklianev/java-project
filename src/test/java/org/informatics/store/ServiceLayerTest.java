@@ -1,14 +1,13 @@
 package org.informatics.store;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
-import org.informatics.config.StoreConfig;
 import org.informatics.entity.CashDesk;
 import org.informatics.entity.Cashier;
-import org.informatics.entity.FoodProduct;
+import org.informatics.entity.Customer;
 import org.informatics.entity.Product;
+import org.informatics.entity.Receipt;
 import org.informatics.service.impl.CashdeskServiceImpl;
 import org.informatics.service.impl.GoodsServiceImpl;
 import org.informatics.service.impl.StoreServiceImpl;
@@ -16,117 +15,249 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-public class ServiceLayerTest {
+class ServiceLayerTest {
 
+    private Store mockStore;
     private GoodsServiceImpl goodsService;
     private CashdeskServiceImpl cashdeskService;
     private StoreServiceImpl storeService;
 
     @BeforeEach
-    public void setUp() {
-        try {
-            StoreConfig config = new StoreConfig(
-                    new BigDecimal("0.20"),
-                    new BigDecimal("0.25"),
-                    3,
-                    new BigDecimal("0.30")
-            );
-            Store store = new Store(config);
-            goodsService = new GoodsServiceImpl(store);
-            cashdeskService = new CashdeskServiceImpl(store);
-            storeService = new StoreServiceImpl(store);
-        } catch (IllegalArgumentException e) {
-            fail("Failed to set up store configuration: " + e.getMessage());
-        }
+    void setUp() {
+        mockStore = Mockito.mock(Store.class);
+        goodsService = new GoodsServiceImpl(mockStore);
+        cashdeskService = new CashdeskServiceImpl(mockStore);
+        storeService = new StoreServiceImpl(mockStore);
+    }
+
+    // GoodsService Tests
+    @Test
+    void testGoodsServiceAddProduct() {
+        Product mockProduct = Mockito.mock(Product.class);
+        Mockito.when(mockStore.addProduct(mockProduct)).thenReturn(true);
+        
+        boolean result = goodsService.addProduct(mockProduct);
+        
+        assertTrue(result);
     }
 
     @Test
-    void testGoodsServiceOperations() {
-        // Test adding products
-        Product product1 = new FoodProduct("F1", "Milk", new BigDecimal("2.0"), LocalDate.now().plusDays(10), 5);
-        Product product2 = new FoodProduct("F2", "Bread", new BigDecimal("1.5"), LocalDate.now().plusDays(3), 10);
+    void testGoodsServiceAddDuplicateProduct() {
+        Product mockProduct = Mockito.mock(Product.class);
+        Mockito.when(mockStore.addProduct(mockProduct)).thenReturn(false);
 
-        boolean result1 = goodsService.addProduct(product1);
-        boolean result2 = goodsService.addProduct(product2);
+        boolean result = goodsService.addProduct(mockProduct);
 
-        assertTrue(result1, "First product should be added successfully");
-        assertTrue(result2, "Second product should be added successfully");
+        assertFalse(result);
+    }
 
-        // Test adding duplicate product
-        boolean duplicateResult = goodsService.addProduct(product1);
-        assertFalse(duplicateResult, "Duplicate product should return false");
+    @Test
+    void testGoodsServiceListProducts() {
+        Product mockProduct1 = Mockito.mock(Product.class);
+        Product mockProduct2 = Mockito.mock(Product.class);
+        List<Product> mockProducts = List.of(mockProduct1, mockProduct2);
+        Mockito.when(mockStore.listProducts()).thenReturn(mockProducts);
 
-        // Test listing products
         List<Product> products = goodsService.listProducts();
-        assertEquals(2, products.size(), "Should have 2 products in store");
 
-        // Test finding products
-        Product foundProduct = goodsService.find("F1");
-        assertNotNull(foundProduct, "Should find existing product");
-        assertEquals("Milk", foundProduct.getName(), "Found product should have correct name");
-
-        Product notFoundProduct = goodsService.find("NONEXISTENT");
-        assertNull(notFoundProduct, "Should return null for non-existent product");
+        assertEquals(2, products.size());
     }
 
     @Test
-    void testCashdeskServiceOperations() {
-        // Test adding cashiers
-        Cashier cashier1 = new Cashier("C1", "John", new BigDecimal("1000"));
-        Cashier cashier2 = new Cashier("C2", "Jane", new BigDecimal("1200"));
+    void testGoodsServiceListEmptyProducts() {
+        Mockito.when(mockStore.listProducts()).thenReturn(List.of());
+        
+        List<Product> products = goodsService.listProducts();
+        
+        assertEquals(0, products.size());
+    }
 
-        cashdeskService.addCashier(cashier1);
-        cashdeskService.addCashier(cashier2);
+    @Test
+    void testGoodsServiceFindExistingProduct() {
+        Product mockProduct = Mockito.mock(Product.class);
+        Mockito.when(mockProduct.getName()).thenReturn("Milk");
+        Mockito.when(mockProduct.getId()).thenReturn("F1");
+        Mockito.when(mockStore.find("F1")).thenReturn(mockProduct);
+
+        Product foundProduct = goodsService.find("F1");
+
+        assertNotNull(foundProduct);
+        assertEquals("Milk", foundProduct.getName());
+        assertEquals("F1", foundProduct.getId());
+    }
+
+    @Test
+    void testGoodsServiceFindNonExistentProduct() {
+        Mockito.when(mockStore.find("NONEXISTENT")).thenReturn(null);
+        
+        Product foundProduct = goodsService.find("NONEXISTENT");
+        
+        assertNull(foundProduct);
+    }
+
+    // CashdeskService Tests
+    @Test
+    void testCashdeskServiceAddCashier() {
+        Cashier mockCashier = Mockito.mock(Cashier.class);
+        
+        cashdeskService.addCashier(mockCashier);
+        
+        Mockito.verify(mockStore).addCashier(mockCashier);
+    }
+
+    @Test
+    void testCashdeskServiceListCashiers() {
+        Cashier mockCashier1 = Mockito.mock(Cashier.class);
+        Cashier mockCashier2 = Mockito.mock(Cashier.class);
+        Mockito.when(mockCashier1.getName()).thenReturn("John");
+        Mockito.when(mockCashier2.getName()).thenReturn("Jane");
+        List<Cashier> mockCashiers = List.of(mockCashier1, mockCashier2);
+        Mockito.when(mockStore.listCashiers()).thenReturn(mockCashiers);
 
         List<Cashier> cashiers = cashdeskService.listCashiers();
-        assertEquals(2, cashiers.size(), "Should have 2 cashiers");
 
-        // Test adding cash desks
-        CashDesk desk1 = new CashDesk();
-        CashDesk desk2 = new CashDesk();
-
-        cashdeskService.addCashDesk(desk1);
-        cashdeskService.addCashDesk(desk2);
-
-        List<CashDesk> desks = cashdeskService.listCashDesks();
-        assertEquals(2, desks.size(), "Should have 2 cash desks");
-
-        // Test assigning cashier to desk
-        try {
-            cashdeskService.assignCashierToDesk("C1", desk1.getId());
-            assertTrue(desk1.isOccupied(), "Desk should be occupied after assignment");
-            assertEquals("C1", desk1.getCurrentCashier().getId(), "Desk should have correct cashier");
-        } catch (Exception e) {
-            fail("Failed to assign cashier to desk: " + e.getMessage());
-        }
+        assertEquals(2, cashiers.size());
+        assertEquals("John", cashiers.getFirst().getName());
     }
 
     @Test
-    void testStoreServiceOperations() {
-        // Setup
-        Cashier cashier = new Cashier("C1", "Test Cashier", new BigDecimal("1000"));
+    void testCashdeskServiceAddCashDesk() {
+        CashDesk mockDesk = Mockito.mock(CashDesk.class);
+        
+        cashdeskService.addCashDesk(mockDesk);
+        
+        Mockito.verify(mockStore).addCashDesk(mockDesk);
+    }
 
-        cashdeskService.addCashier(cashier);
-        CashDesk desk = new CashDesk();
-        cashdeskService.addCashDesk(desk);
+    @Test
+    void testCashdeskServiceFindCashierById() {
+        Cashier mockCashier = Mockito.mock(Cashier.class);
+        Mockito.when(mockCashier.getName()).thenReturn("John");
+        Mockito.when(mockStore.findCashierById("C1")).thenReturn(Optional.of(mockCashier));
 
-        try {
-            cashdeskService.assignCashierToDesk(cashier.getId(), desk.getId());
-        } catch (Exception e) {
-            fail("Failed to set up cashier desk assignment: " + e.getMessage());
-        }
+        Optional<Cashier> foundCashier = cashdeskService.findCashierById("C1");
 
-        // Test creating receipt
-        try {
-            storeService.createReceipt(cashier);
-            // Receipt creation should succeed
-        } catch (Exception e) {
-            fail("Failed to create receipt: " + e.getMessage());
-        }
+        assertTrue(foundCashier.isPresent());
+        assertEquals("John", foundCashier.get().getName());
+    }
+
+    @Test
+    void testCashdeskServiceFindNonExistentCashier() {
+        Mockito.when(mockStore.findCashierById("NONEXISTENT")).thenReturn(Optional.empty());
+        
+        Optional<Cashier> foundCashier = cashdeskService.findCashierById("NONEXISTENT");
+        
+        assertTrue(foundCashier.isEmpty());
+    }
+
+    @Test
+    void testCashdeskServiceFindCashDeskById() {
+        CashDesk mockDesk = Mockito.mock(CashDesk.class);
+        Mockito.when(mockDesk.getId()).thenReturn("DESK1");
+        Mockito.when(mockStore.findCashDeskById("DESK1")).thenReturn(Optional.of(mockDesk));
+
+        Optional<CashDesk> foundDesk = cashdeskService.findCashDeskById("DESK1");
+
+        assertTrue(foundDesk.isPresent());
+        assertEquals("DESK1", foundDesk.get().getId());
+    }
+
+    @Test
+    void testCashdeskServiceAssignCashierToDesk() throws Exception {
+        cashdeskService.assignCashierToDesk("C1", "DESK1");
+
+        Mockito.verify(mockStore).assignCashierToDesk("C1", "DESK1");
+    }
+
+    @Test
+    void testCashdeskServiceReleaseCashierFromDesk() throws Exception {
+        cashdeskService.releaseCashierFromDesk("DESK1");
+
+        Mockito.verify(mockStore).releaseCashierFromDesk("DESK1");
+    }
+
+    @Test
+    void testCashdeskServiceGetAssignedDeskForCashier() {
+        CashDesk mockDesk = Mockito.mock(CashDesk.class);
+        Mockito.when(mockDesk.getId()).thenReturn("DESK1");
+        Mockito.when(mockStore.getAssignedDeskForCashier("C1")).thenReturn(Optional.of(mockDesk));
+
+        Optional<CashDesk> assignedDesk = cashdeskService.getAssignedDeskForCashier("C1");
+
+        assertTrue(assignedDesk.isPresent());
+        assertEquals("DESK1", assignedDesk.get().getId());
+    }
+
+    @Test
+    void testCashdeskServiceGetAssignedDeskForUnassignedCashier() {
+        Mockito.when(mockStore.getAssignedDeskForCashier("C1")).thenReturn(Optional.empty());
+
+        Optional<CashDesk> assignedDesk = cashdeskService.getAssignedDeskForCashier("C1");
+
+        assertTrue(assignedDesk.isEmpty());
+    }
+
+    // StoreService Tests
+    @Test
+    void testStoreServiceCreateReceipt() {
+        Cashier mockCashier = Mockito.mock(Cashier.class);
+        Receipt mockReceipt = Mockito.mock(Receipt.class);
+        Mockito.when(mockReceipt.getCashier()).thenReturn(mockCashier);
+        Mockito.when(mockStore.createReceipt(mockCashier)).thenReturn(mockReceipt);
+
+        Receipt receipt = storeService.createReceipt(mockCashier);
+
+        assertNotNull(receipt);
+        assertEquals(mockCashier, receipt.getCashier());
+    }
+
+    @Test
+    void testStoreServiceCreateReceiptWithUnassignedCashierThrowsException() {
+        Cashier mockCashier = Mockito.mock(Cashier.class);
+        Mockito.when(mockStore.createReceipt(mockCashier))
+                .thenThrow(new IllegalStateException("Cashier is not assigned to an open cash desk"));
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> storeService.createReceipt(mockCashier));
+        
+        assertTrue(exception.getMessage().contains("not assigned to an open cash desk"));
+    }
+
+    @Test
+    void testStoreServiceSellProduct() throws Exception {
+        Cashier mockCashier = Mockito.mock(Cashier.class);
+        Customer mockCustomer = Mockito.mock(Customer.class);
+        Receipt mockReceipt = Mockito.mock(Receipt.class);
+        Mockito.when(mockReceipt.getLines()).thenReturn(List.of(Mockito.mock(Receipt.Line.class)));
+        Mockito.when(mockStore.sell(mockCashier, "F1", 2, mockCustomer)).thenReturn(mockReceipt);
+
+        Receipt receipt = storeService.sell(mockCashier, "F1", 2, mockCustomer);
+
+        assertNotNull(receipt);
+        assertEquals(1, receipt.getLines().size());
+    }
+
+    @Test
+    void testStoreServiceAddToReceipt() throws Exception {
+        Cashier mockCashier = Mockito.mock(Cashier.class);
+        Customer mockCustomer = Mockito.mock(Customer.class);
+        Receipt mockReceipt = Mockito.mock(Receipt.class);
+        Receipt.Line mockLine1 = Mockito.mock(Receipt.Line.class);
+        Receipt.Line mockLine2 = Mockito.mock(Receipt.Line.class);
+        
+        Mockito.when(mockStore.addToReceipt(mockReceipt, "F1", 1, mockCustomer)).thenReturn(mockReceipt);
+        Mockito.when(mockStore.addToReceipt(mockReceipt, "F2", 2, mockCustomer)).thenReturn(mockReceipt);
+        Mockito.when(mockReceipt.getLines()).thenReturn(List.of(mockLine1, mockLine2));
+
+        Receipt updatedReceipt = storeService.addToReceipt(mockReceipt, "F1", 1, mockCustomer);
+        storeService.addToReceipt(updatedReceipt, "F2", 2, mockCustomer);
+
+        assertEquals(2, updatedReceipt.getLines().size());
     }
 }
