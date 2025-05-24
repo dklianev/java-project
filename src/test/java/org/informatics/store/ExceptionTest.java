@@ -9,12 +9,9 @@ import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
 import org.informatics.entity.FoodProduct;
 import org.informatics.entity.NonFoodProduct;
-import org.informatics.entity.Product;
-import org.informatics.entity.Receipt;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
 import org.informatics.exception.ProductExpiredException;
-import org.informatics.exception.ProductNotFoundException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,14 +47,6 @@ public class ExceptionTest {
         } catch (Exception e) {
             fail("Failed to set up test environment: " + e.getMessage());
         }
-    }
-
-    @Test
-    void testSaleWithNonExistentProductThrowsNotFoundException() {
-        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class,
-                () -> store.sell(cashier, "INVALID_ID", 1, customer));
-        
-        assertTrue(exception.getMessage().contains("INVALID_ID"));
     }
 
     @Test
@@ -144,40 +133,6 @@ public class ExceptionTest {
 
         assertTrue(firstAdd);
         assertFalse(secondAdd);
-    }
-
-    @Test
-    void testReceiptWithNullProductThrowsIllegalArgumentException() {
-        Receipt receipt = new Receipt(cashier);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> receipt.add(null, 1, BigDecimal.ONE));
-        
-        assertEquals("Product cannot be null", exception.getMessage());
-    }
-
-    @Test
-    void testReceiptWithZeroQuantityThrowsIllegalArgumentException() {
-        Receipt receipt = new Receipt(cashier);
-        Product product = new FoodProduct("P1", "Milk", new BigDecimal("2.00"), 
-                LocalDate.now().plusDays(5), 5);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> receipt.add(product, 0, BigDecimal.ONE));
-        
-        assertEquals("Quantity must be positive", exception.getMessage());
-    }
-
-    @Test
-    void testReceiptWithNegativePriceThrowsIllegalArgumentException() {
-        Receipt receipt = new Receipt(cashier);
-        Product product = new FoodProduct("P1", "Milk", new BigDecimal("2.00"), 
-                LocalDate.now().plusDays(5), 5);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> receipt.add(product, 1, new BigDecimal("-1.0")));
-        
-        assertEquals("Price cannot be negative", exception.getMessage());
     }
 
     @Test

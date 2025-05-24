@@ -245,7 +245,6 @@ class ServiceLayerTest {
 
     @Test
     void testStoreServiceAddToReceipt() throws Exception {
-        Cashier mockCashier = Mockito.mock(Cashier.class);
         Customer mockCustomer = Mockito.mock(Customer.class);
         Receipt mockReceipt = Mockito.mock(Receipt.class);
         Receipt.Line mockLine1 = Mockito.mock(Receipt.Line.class);

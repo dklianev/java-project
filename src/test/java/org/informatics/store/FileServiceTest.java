@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 class FileServiceTest {
 
@@ -95,43 +94,11 @@ class FileServiceTest {
         assertNull(loadedReceipt);
     }
 
-    // Mock-based tests for FileService behavior
-    @Test
-    void testLoadAllReceiptsWithMockedDirectory() throws Exception {
-        File mockDir = Mockito.mock(File.class);
-        File mockFile1 = Mockito.mock(File.class);
-        File mockFile2 = Mockito.mock(File.class);
-        
-        Mockito.when(mockDir.exists()).thenReturn(true);
-        Mockito.when(mockDir.listFiles(Mockito.any(java.io.FilenameFilter.class))).thenReturn(new File[]{mockFile1, mockFile2});
-        Mockito.when(mockFile1.getName()).thenReturn("receipt-1.ser");
-        Mockito.when(mockFile2.getName()).thenReturn("receipt-2.ser");
-
-        // For this test, we need real serialized files or complex mocking
-        // This shows the structure, but actual file operations need real files
-        List<Receipt> result = fileService.loadAll(tempDir); // Using real tempDir for now
-        
-        assertNotNull(result);
-    }
-
     @Test
     void testLoadAllReceiptsFromEmptyDirectory() throws Exception {
         List<Receipt> loadedReceipts = fileService.loadAll(tempDir);
 
         assertEquals(0, loadedReceipts.size());
-    }
-
-    @Test
-    void testFileServiceLoadWithMockedFile() throws Exception {
-        File mockDir = Mockito.mock(File.class);
-        File mockReceiptFile = Mockito.mock(File.class);
-        
-        Mockito.when(mockReceiptFile.exists()).thenReturn(false);
-
-        // This demonstrates the structure - actual implementation needs real I/O
-        Receipt result = fileService.load(tempDir, 999); // Using real tempDir
-        
-        assertNull(result);
     }
 
     @Test
