@@ -101,7 +101,7 @@ public class Store {
                 .findFirst();
     }
 
-    /**
+    /*
      * Adds a product to the store inventory. Returns true if successful, false
      * if product with same ID already exists.
      */

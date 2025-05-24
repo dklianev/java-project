@@ -73,7 +73,7 @@ public class Product implements Serializable {
 
         // Apply near-expiry discount if product is close to expiration
         if (!isExpired(today)
-                && expiry.minusDays(cfg.daysForNearExpiryDiscount()).isBefore(today)) {
+                && !expiry.minusDays(cfg.daysForNearExpiryDiscount()).isAfter(today)) {
             price = price.multiply(
                     BigDecimal.ONE.subtract(cfg.discountPercentage()));
         }
