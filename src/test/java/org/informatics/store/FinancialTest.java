@@ -23,11 +23,10 @@ class FinancialTest {
     private Store mockStore;
     private Cashier cashier;
     private Customer customer;
-    private StoreConfig config;
 
     @BeforeEach
     void setUp() {
-        config = new StoreConfig(
+        StoreConfig config = new StoreConfig(
                 new BigDecimal("0.20"), // 20% food markup
                 new BigDecimal("0.25"), // 25% non-food markup
                 3, // near expiry days
