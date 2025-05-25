@@ -49,7 +49,7 @@ class FinancialTest {
         }
     }
 
-    // Mockito tests demonstrating mocking capabilities
+    // Mockito tests
     @Test
     void testTurnoverCalculationWithMockedReceipts() {
         Receipt mockReceipt1 = Mockito.mock(Receipt.class);

@@ -7,7 +7,7 @@ import org.informatics.entity.Receipt;
 
 public interface FileService {
 
-    List<Receipt> loadAll(java.io.File dir) throws IOException, ClassNotFoundException;
+    List<Receipt> loadAll(java.io.File dir) throws IOException;
 
     Receipt load(java.io.File dir, int receiptNumber) throws IOException, ClassNotFoundException;
 }

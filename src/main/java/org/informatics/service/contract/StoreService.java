@@ -2,7 +2,9 @@ package org.informatics.service.contract;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import org.informatics.config.StoreConfig;
 import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
 import org.informatics.entity.Receipt;
@@ -22,4 +24,8 @@ public interface StoreService {
     Receipt createReceipt(Cashier c);
 
     void saveReceipt(Receipt receipt, File dir) throws IOException;
+
+    List<Receipt> listReceipts();
+
+    StoreConfig getConfig();
 }

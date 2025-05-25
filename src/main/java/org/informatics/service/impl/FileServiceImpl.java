@@ -14,7 +14,7 @@ import org.informatics.service.contract.FileService;
 public class FileServiceImpl implements FileService {
 
     @Override
-    public List<Receipt> loadAll(File dir) throws IOException, ClassNotFoundException {
+    public List<Receipt> loadAll(File dir) throws IOException {
         List<Receipt> list = new ArrayList<>();
 
         if (!dir.exists()) {
@@ -34,7 +34,7 @@ public class FileServiceImpl implements FileService {
                     list.add(receipt);
                 }
             } catch (InvalidClassException | ClassNotFoundException e) {
-                System.err.println("Could not deserialize file: " + file.getName() + " - " + e.getMessage());
+                System.out.println("Warning: Could not deserialize file: " + file.getName() + " - " + e.getMessage());
             }
         }
 

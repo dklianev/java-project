@@ -2,7 +2,9 @@ package org.informatics.service.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import org.informatics.config.StoreConfig;
 import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
 import org.informatics.entity.Receipt;
@@ -41,5 +43,15 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public void saveReceipt(Receipt receipt, File dir) throws IOException {
         receipt.save(dir);
+    }
+
+    @Override
+    public List<Receipt> listReceipts() {
+        return store.listReceipts();
+    }
+
+    @Override
+    public StoreConfig getConfig() {
+        return store.getConfig();
     }
 }

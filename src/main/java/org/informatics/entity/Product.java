@@ -53,10 +53,6 @@ public class Product implements Serializable {
         qty += d;
     }
 
-    public LocalDate getExpiry() {
-        return expiry;
-    }
-
     // Product is expired if expiry date is today or earlier
     public boolean isExpired(LocalDate today) {
         return !expiry.isAfter(today);
