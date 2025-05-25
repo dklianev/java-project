@@ -13,7 +13,7 @@ public class Customer extends Person {
         this.balance = balance;
     }
 
-    // Validates sufficient funds before deducting payment amount
+    // Check if customer has enough money
     public void pay(BigDecimal amt) throws InsufficientBudgetException {
         if (balance.compareTo(amt) < 0) {
             throw new InsufficientBudgetException(amt, balance);

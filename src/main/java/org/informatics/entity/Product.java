@@ -58,9 +58,9 @@ public class Product implements Serializable {
         return !expiry.isAfter(today);
     }
 
-    // Calculates sale price: applies markup, then near-expiry discount if applicable
+    // Calculate sale price with markup and discount
     public BigDecimal salePrice(StoreConfig cfg, LocalDate today) {
-        // Apply category-specific markup
+        // Apply markup for category
         BigDecimal markup = type == GoodsType.GROCERIES
                 ? cfg.groceriesMarkup() : cfg.nonFoodsMarkup();
 

@@ -26,17 +26,17 @@ import org.informatics.service.impl.StoreServiceImpl;
 import org.informatics.store.Store;
 
 /**
- * Store Management System Demo
+ * Store System Demo
  */
 public class StoreDemo {
     
-    // Configuration constants
+    // Config values
     private static final BigDecimal FOOD_MARKUP_RATE = new BigDecimal("0.20");
     private static final BigDecimal NON_FOOD_MARKUP_RATE = new BigDecimal("0.25");
     private static final int NEAR_EXPIRY_DAYS_THRESHOLD = 3;
     private static final BigDecimal NEAR_EXPIRY_DISCOUNT_RATE = new BigDecimal("0.30");
 
-    // Service layer
+    // Services
     private static StoreService storeService;
     private static GoodsService goodsService;
     private static CashdeskService cashdeskService;
@@ -44,11 +44,11 @@ public class StoreDemo {
     private static FileService fileService;
 
     public static void main(String[] args) {
-        System.out.println("=== COMPREHENSIVE STORE MANAGEMENT DEMO ===\n");
+        System.out.println("=== STORE DEMO ===\n");
 
         try {
-            // === PHASE 1: STORE SETUP ===
-            // 1. Initialize store with configuration
+            // Setup store
+            // 1. Setup store with config
             StoreConfig config = new StoreConfig(
                     FOOD_MARKUP_RATE,           // 20% food markup
                     NON_FOOD_MARKUP_RATE,       // 25% non-food markup
@@ -57,14 +57,14 @@ public class StoreDemo {
             );
             Store store = new Store(config);
             
-            // 2. Initialize service layer
+            // 2. Initialize services
             initializeServices(store);
-            System.out.println("✓ Store and service layer initialized");
+            System.out.println("✓ Store and services initialized");
 
-            // 3. Show store configuration
+            // 3. Show store config
             demonstrateStoreConfiguration();
 
-            // === PHASE 2: RESOURCE SETUP ===
+            // Add cashiers and products
             // 4. Setup cashiers and cash desks
             setupCashiersAndDesks();
 
@@ -72,41 +72,41 @@ public class StoreDemo {
             addProducts();
             showInventory("INITIAL INVENTORY");
 
-            // 6. Demonstrate product search functionality
+            // 6. Product search
             demonstrateProductSearch();
 
-            // === PHASE 3: CUSTOMER OPERATIONS ===
+            // Create customers
             // 7. Create customers
             Customer customer1 = new Customer("CUST1", "Ivan Petrov", new BigDecimal("200"));
             Customer customer2 = new Customer("CUST2", "Maria Dimitrova", new BigDecimal("100"));
             System.out.println("✓ Created customers with budgets");
 
-            // === PHASE 4: SALES OPERATIONS ===
+            // Sales
             // 8. Simple single-item sales
             performSingleItemSales(customer1, customer2);
 
-            // 9. Multi-item receipt demonstration
+            // 9. Multi-item receipt
             performMultiItemSale(customer1);
 
-            // === PHASE 5: OPERATIONAL MANAGEMENT ===
-            // 10. Cashdesk management demonstration
+            // Other tasks
+            // 10. Cashdesk work
             demonstrateCashdeskManagement();
 
             // 11. Show updated inventory after sales
             showInventory("INVENTORY AFTER SALES");
 
-            // === PHASE 6: PERSISTENCE & REPORTING ===
-            // 12. File operations demonstration
+            // Reports and files
+            // 12. File work
             demonstrateFileOperations();
 
-            // 13. Financial reporting and analysis
-            showDetailedFinancialSummary();
+            // 13. Financial summary
+            showFinancialSummary();
 
-            // === PHASE 7: ERROR HANDLING ===
-            // 14. Exception handling demonstration
+            // Test exceptions
+            // 14. Exception handling
             demonstrateExceptions(customer1);
 
-            System.out.println("\n=== DEMO COMPLETED SUCCESSFULLY ===");
+            System.out.println("\n=== DEMO COMPLETED ===");
 
         } catch (Exception e) {
             System.err.println("Demo failed: " + e.getMessage());
@@ -150,11 +150,11 @@ public class StoreDemo {
         boolean success4 = goodsService.addProduct(new NonFoodProduct("N1", "Soap", new BigDecimal("4.00"), today.plusYears(1), 25));
         boolean success5 = goodsService.addProduct(new NonFoodProduct("N2", "Toothpaste", new BigDecimal("5.50"), today.plusYears(2), 30));
         
-        // Report results
+        // Show results
         int successCount = (success1 ? 1 : 0) + (success2 ? 1 : 0) + (success3 ? 1 : 0) + (success4 ? 1 : 0) + (success5 ? 1 : 0);
-        System.out.println("✓ Successfully added " + successCount + "/5 products to inventory");
+        System.out.println("✓ Added " + successCount + "/5 products to inventory");
         
-        // Demonstrate duplicate ID prevention
+        // Try duplicate ID
         boolean duplicateAttempt = goodsService.addProduct(new FoodProduct("F1", "Duplicate Milk", new BigDecimal("3.00"), today.plusDays(5), 10));
         if (!duplicateAttempt) {
             System.out.println("✓ Correctly prevented duplicate product ID 'F1'");
@@ -193,7 +193,7 @@ public class StoreDemo {
         System.out.println("Sale 3: " + receipt3.getLines().getFirst().product().getName()
                 + " = $" + receipt3.total());
 
-        // Additional sales for better turnover
+        // More sales
         Receipt receipt4 = storeService.sell(cashier, "F2", 3, customer1); // More white bread
         System.out.println("Sale 4: " + receipt4.getLines().getFirst().product().getName()
                 + " x3 = $" + receipt4.total());
@@ -217,12 +217,12 @@ public class StoreDemo {
         System.out.println("Multi-item sale completed. Items: " + finalReceipt.getLines().size() 
                 + ", Total: $" + finalReceipt.total());
         
-        System.out.println("\n=== DETAILED MULTI-ITEM RECEIPT ===");
+        System.out.println("\n=== MULTI-ITEM RECEIPT ===");
         System.out.println(finalReceipt);
     }
 
     private static void demonstrateFileOperations() {
-        System.out.println("\n=== FILE OPERATIONS DEMO ===");
+        System.out.println("\n=== FILE WORK DEMO ===");
         File receiptDir = new File("receipts");
         if (!receiptDir.exists() && !receiptDir.mkdirs()) {
             System.out.println("Warning: Could not create receipts directory");
@@ -237,7 +237,7 @@ public class StoreDemo {
             }
             System.out.println("✓ Saved " + receipts.size() + " receipts to files (.txt and .ser)");
 
-            // Demonstrate file loading
+            // Load files
             List<Receipt> loadedReceipts = fileService.loadAll(receiptDir);
             System.out.println("✓ Loaded " + loadedReceipts.size() + " receipts from files");
 
@@ -245,17 +245,17 @@ public class StoreDemo {
             if (!loadedReceipts.isEmpty()) {
                 Receipt firstReceipt = loadedReceipts.getFirst();
                 Receipt loadedSpecific = fileService.load(receiptDir, firstReceipt.getNumber());
-                System.out.println("✓ Successfully loaded receipt #" + loadedSpecific.getNumber() 
+                System.out.println("✓ Loaded receipt #" + loadedSpecific.getNumber() 
                         + " with total $" + loadedSpecific.total());
             }
 
         } catch (Exception e) {
-            System.err.println("File operations error: " + e.getMessage());
+            System.err.println("File error: " + e.getMessage());
         }
     }
 
     private static void demonstrateStoreConfiguration() {
-        System.out.println("\n=== STORE CONFIGURATION DEMO ===");
+        System.out.println("\n=== STORE CONFIG DEMO ===");
         StoreConfig config = storeService.getConfig();
         
         System.out.println("--- Store Settings ---");
@@ -264,11 +264,11 @@ public class StoreDemo {
         System.out.printf("Near-Expiry Threshold:      %d days\n", config.daysForNearExpiryDiscount());
         System.out.printf("Near-Expiry Discount:       %.1f%%\n", config.discountPercentage().multiply(new BigDecimal("100")));
         
-        System.out.println("✓ Store configuration retrieved successfully");
+        System.out.println("✓ Store config shown");
     }
 
-    private static void showDetailedFinancialSummary() {
-        System.out.println("\n=== DETAILED FINANCIAL SUMMARY ===");
+    private static void showFinancialSummary() {
+        System.out.println("\n=== FINANCIAL SUMMARY ===");
         System.out.printf("Total Turnover:         $%8.2f\n", financialService.turnover());
         System.out.printf("Salary Expenses:        $%8.2f\n", financialService.salaryExpenses());
         System.out.printf("Cost of Sold Goods:     $%8.2f\n", financialService.costOfSoldGoods());
@@ -278,7 +278,7 @@ public class StoreDemo {
         System.out.printf("Total Cashiers:         %8d\n", cashdeskService.listCashiers().size());
         System.out.printf("Total Products:         %8d\n", goodsService.listProducts().size());
         
-        // Detailed sales report by product
+        // Sales report by product
         System.out.println("\n--- Sales Report by Product ---");
         var soldItems = financialService.getSoldItems();
         if (soldItems.isEmpty()) {
@@ -293,12 +293,12 @@ public class StoreDemo {
                 String productName = product != null ? product.getName() : "Unknown";
                 System.out.printf("%-4s %-15s %-10d\n", productId, productName, quantitySold);
             }
-            System.out.println("✓ Sales report generated successfully");
+            System.out.println("✓ Sales report generated");
         }
     }
 
     private static void demonstrateCashdeskManagement() throws Exception {
-        System.out.println("\n=== CASHDESK MANAGEMENT DEMO ===");
+        System.out.println("\n=== CASHDESK DEMO ===");
         
         // 1. Show current cashier assignments
         System.out.println("\n--- Current Cashier Assignments ---");
@@ -314,8 +314,8 @@ public class StoreDemo {
             }
         }
 
-        // 2. Demonstrate findCashierById and findCashDeskById
-        System.out.println("\n--- Search Operations ---");
+        // 2. Find cashier and desk by ID
+        System.out.println("\n--- Search Tests ---");
         var foundCashier = cashdeskService.findCashierById("C1");
         foundCashier.ifPresent(cashier -> System.out.println("✓ Found cashier C1: " + cashier.getName()));
         
@@ -327,7 +327,7 @@ public class StoreDemo {
                     " (Occupied: " + cashDesk.isOccupied() + ")"));
         }
 
-        // 3. Demonstrate reassignment - move Petya to second desk
+        // 3. Move Petya to second desk
         System.out.println("\n--- Cashier Reassignment Demo ---");
         if (allDesks.size() >= 2) {
             String secondDeskId = allDesks.get(1).getId();
@@ -364,7 +364,7 @@ public class StoreDemo {
             assignedDesk.ifPresent(cashDesk -> System.out.println("✓ " + cashier.getName() + " → Desk " + cashDesk.getId()));
         }
         
-        System.out.println("✓ Cashdesk management operations completed successfully");
+        System.out.println("✓ Cashdesk work completed");
     }
 
     private static void demonstrateExceptions(Customer customer) {
@@ -446,7 +446,7 @@ public class StoreDemo {
         List<Product> allProducts = goodsService.listProducts();
         System.out.println("✓ Total products in inventory: " + allProducts.size());
         
-        // Demonstrate finding specific products by ID
+        // Find products by ID
         System.out.println("\n--- Product Lookup by ID ---");
         String[] productIds = {"F1", "N1", "F3", "INVALID"};
         
@@ -471,6 +471,6 @@ public class StoreDemo {
         System.out.println("✓ Food products: " + foodCount);
         System.out.println("✓ Non-food products: " + nonFoodCount);
         
-        System.out.println("✓ Product search operations completed");
+        System.out.println("✓ Product search completed");
     }
 } 

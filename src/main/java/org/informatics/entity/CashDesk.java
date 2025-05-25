@@ -8,7 +8,7 @@ import org.informatics.exception.CashDeskOccupiedException;
 public class CashDesk implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private static int nextId = 1;  // Auto-incrementing ID generator for all desks
+    private static int nextId = 1;  // Auto ID for desks
 
     private final String id;
     private Cashier currentCashier;
@@ -37,7 +37,7 @@ public class CashDesk implements Serializable {
         return currentCashier != null;
     }
 
-    // Assigns cashier to desk, ensures only one cashier per desk
+    // Assign cashier to desk
     public void assignCashier(Cashier cashier) throws CashDeskOccupiedException {
         if (this.currentCashier == null) {
             this.currentCashier = cashier;

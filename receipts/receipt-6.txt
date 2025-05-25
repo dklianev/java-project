@@ -1,0 +1,10 @@
+RECEIPT #6
+Date: 2025-05-25 16:30:52
+Cashier: Petya Nikolova (ID: C1)
+----------------------------------------
+ITEMS:
+White Bread            2 x    2.16 =     4.32
+Toothpaste             1 x    6.88 =     6.88
+Whole Milk             1 x    3.00 =     3.00
+----------------------------------------
+TOTAL:                             14.20

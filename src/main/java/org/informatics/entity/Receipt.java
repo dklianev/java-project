@@ -74,7 +74,7 @@ public class Receipt implements Serializable {
         COUNTER = 0;
     }
 
-    // Saves receipt as both .txt and .ser files, creates directory if needed
+    // Save receipt as .txt and .ser files
     public void save(File dir) throws IOException {
         if (!dir.exists()) {
             if (!dir.mkdirs()) {

@@ -2,7 +2,7 @@ package org.informatics.config;
 
 import java.math.BigDecimal;
 
-// Store configuration containing rules for pricing and discounts
+// Store settings for pricing and discounts
 public record StoreConfig(
         BigDecimal groceriesMarkup, // Markup for grocery items
         BigDecimal nonFoodsMarkup, // Markup for non-food items

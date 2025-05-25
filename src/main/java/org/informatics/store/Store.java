@@ -128,7 +128,7 @@ public class Store {
         return new ArrayList<>(cashiers);
     }
 
-    // Processes sale transaction: validates business rules, updates inventory, handles payment
+            // Check rules, update inventory, handle payment
     public Receipt sell(Cashier cashier, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
 
@@ -136,7 +136,7 @@ public class Store {
             throw new IllegalStateException("Cashier " + cashier.getName() + " is not assigned to an open cash desk.");
         }
 
-        // Process the sale using common logic
+        // Use common sale logic
         BigDecimal price = processSaleItem(productId, qty, cust);
         
         Receipt r = new Receipt(cashier);
@@ -148,14 +148,14 @@ public class Store {
     public Receipt addToReceipt(Receipt receipt, String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
 
-        // Process the sale using common logic
+        // Use common sale logic
         BigDecimal price = processSaleItem(productId, qty, cust);
         
         receipt.add(inventory.get(productId), qty, price);
         return receipt;
     }
 
-    // Sale processing logic extracted to eliminate duplication
+    // Common sale logic
     private BigDecimal processSaleItem(String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
         
@@ -180,14 +180,9 @@ public class Store {
         p.addQuantity(-qty);
         
         // Track sold quantities for reporting
-        Integer currentQty = soldItems.get(productId);
-        if (currentQty == null) {
-            soldItems.put(productId, qty);
-        } else {
-            soldItems.put(productId, currentQty + qty);
-        }
+        soldItems.merge(productId, qty, Integer::sum);
         
-        // Add to cost of sold goods for profit calculation
+        // Add to cost of sold goods
         costOfSoldGoods = costOfSoldGoods.add(
                 p.getPurchasePrice().multiply(BigDecimal.valueOf(qty)));
         
@@ -204,7 +199,7 @@ public class Store {
         return r;
     }
 
-    // Calculates total revenue from all completed sales
+    // Total revenue from all sales
     public BigDecimal turnover() {
         BigDecimal total = BigDecimal.ZERO;
         for (Receipt receipt : receipts) {
@@ -217,7 +212,7 @@ public class Store {
         return new HashMap<>(soldItems);
     }
 
-    // Calculates total monthly salary expenses for all cashiers
+    // Total monthly salaries
     public BigDecimal salaryExpenses() {
         BigDecimal total = BigDecimal.ZERO;
         for (Cashier cashier : cashiers) {
@@ -234,7 +229,7 @@ public class Store {
         return totalCostOfAllGoodsSupplied;
     }
 
-    // Calculates store profit: Revenue - Salary Expenses - Cost of Sold Goods
+    // Store profit: Revenue - Salary - Cost of Goods
     public BigDecimal profit() {
         return turnover().subtract(salaryExpenses()).subtract(costOfSoldGoods);
     }
