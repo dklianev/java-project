@@ -28,7 +28,7 @@ public class Store {
     private final List<Cashier> cashiers = new ArrayList<>();
     private final List<CashDesk> cashDesks = new ArrayList<>();
     private final Map<String, Integer> soldItems = new HashMap<>(); // Track quantities sold by product ID
-    private BigDecimal costOfSoldGoods = BigDecimal.ZERO;           // COGS: purchase price of sold items
+    private BigDecimal costOfSoldGoods = BigDecimal.ZERO;           // Purchase price of sold items
     private BigDecimal totalCostOfAllGoodsSupplied = BigDecimal.ZERO; // Total inventory investment
 
     public Store(StoreConfig cfg) {
@@ -155,7 +155,7 @@ public class Store {
         return receipt;
     }
 
-    // Common sale processing logic extracted to eliminate duplication
+    // Sale processing logic extracted to eliminate duplication
     private BigDecimal processSaleItem(String productId, int qty, Customer cust)
             throws ProductNotFoundException, ProductExpiredException, InsufficientQuantityException, InsufficientBudgetException {
         
@@ -187,7 +187,7 @@ public class Store {
             soldItems.put(productId, currentQty + qty);
         }
         
-        // Add to COGS for profit calculation
+        // Add to cost of sold goods for profit calculation
         costOfSoldGoods = costOfSoldGoods.add(
                 p.getPurchasePrice().multiply(BigDecimal.valueOf(qty)));
         
