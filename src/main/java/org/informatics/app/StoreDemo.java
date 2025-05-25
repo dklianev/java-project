@@ -79,7 +79,7 @@ public class StoreDemo {
             // 7. Create customers
             Customer customer1 = new Customer("CUST1", "Ivan Petrov", new BigDecimal("200"));
             Customer customer2 = new Customer("CUST2", "Maria Dimitrova", new BigDecimal("100"));
-            System.out.println("✓ Created customers with budgets");
+            System.out.println("Created customers with budgets");
 
             // Sales
             // 8. Simple single-item sales
@@ -133,7 +133,7 @@ public class StoreDemo {
         cashdeskService.addCashDesk(desk2);
         
         cashdeskService.assignCashierToDesk(cashier1.getId(), desk1.getId());
-        System.out.println("✓ Added 2 cashiers and 2 cash desks, assigned Petya to desk " + desk1.getId());
+        System.out.println("Added 2 cashiers and 2 cash desks, assigned Petya to desk " + desk1.getId());
     }
 
     private static void addProducts() {
@@ -152,12 +152,12 @@ public class StoreDemo {
         
         // Show results
         int successCount = (success1 ? 1 : 0) + (success2 ? 1 : 0) + (success3 ? 1 : 0) + (success4 ? 1 : 0) + (success5 ? 1 : 0);
-        System.out.println("✓ Added " + successCount + "/5 products to inventory");
+        System.out.println("Added " + successCount + "/5 products to inventory");
         
         // Try duplicate ID
         boolean duplicateAttempt = goodsService.addProduct(new FoodProduct("F1", "Duplicate Milk", new BigDecimal("3.00"), today.plusDays(5), 10));
         if (!duplicateAttempt) {
-            System.out.println("✓ Correctly prevented duplicate product ID 'F1'");
+            System.out.println("Correctly prevented duplicate product ID 'F1'");
         }
         
         // Demonstrate restocking functionality
@@ -168,13 +168,13 @@ public class StoreDemo {
         boolean restockSuccess = goodsService.restockProduct("F1", 25); // Add 25 more milk
         if (restockSuccess) {
             Product milkAfter = goodsService.find("F1");
-            System.out.println("✓ Restocked milk with 25 units. New quantity: " + milkAfter.getQuantity());
+            System.out.println("Restocked milk with 25 units. New quantity: " + milkAfter.getQuantity());
         }
         
         // Try restocking non-existent product
         boolean restockFail = goodsService.restockProduct("INVALID", 10);
         if (!restockFail) {
-            System.out.println("✓ Correctly prevented restocking non-existent product");
+            System.out.println("Correctly prevented restocking non-existent product");
         }
     }
 
@@ -252,17 +252,17 @@ public class StoreDemo {
             for (Receipt r : receipts) {
                 storeService.saveReceipt(r, receiptDir);
             }
-            System.out.println("✓ Saved " + receipts.size() + " receipts to files (.txt and .ser)");
+            System.out.println("Saved " + receipts.size() + " receipts to files (.txt and .ser)");
 
             // Load files
             List<Receipt> loadedReceipts = fileService.loadAll(receiptDir);
-            System.out.println("✓ Loaded " + loadedReceipts.size() + " receipts from files");
+            System.out.println("Loaded " + loadedReceipts.size() + " receipts from files");
 
             // Load specific receipt
             if (!loadedReceipts.isEmpty()) {
                 Receipt firstReceipt = loadedReceipts.getFirst();
                 Receipt loadedSpecific = fileService.load(receiptDir, firstReceipt.getNumber());
-                System.out.println("✓ Loaded receipt #" + loadedSpecific.getNumber() 
+                System.out.println("Loaded receipt #" + loadedSpecific.getNumber() 
                         + " with total $" + loadedSpecific.total());
             }
 
@@ -281,7 +281,7 @@ public class StoreDemo {
         System.out.printf("Near-Expiry Threshold:      %d days\n", config.daysForNearExpiryDiscount());
         System.out.printf("Near-Expiry Discount:       %.1f%%\n", config.discountPercentage().multiply(new BigDecimal("100")));
         
-        System.out.println("✓ Store config shown");
+        System.out.println("Store config shown");
     }
 
     private static void showFinancialSummary() {
@@ -310,7 +310,7 @@ public class StoreDemo {
                 String productName = product != null ? product.getName() : "Unknown";
                 System.out.printf("%-4s %-15s %-10d\n", productId, productName, quantitySold);
             }
-            System.out.println("✓ Sales report generated");
+            System.out.println("Sales report generated");
         }
     }
 
@@ -323,7 +323,7 @@ public class StoreDemo {
         for (Cashier cashier : allCashiers) {
             var assignedDesk = cashdeskService.getAssignedDeskForCashier(cashier.getId());
             if (assignedDesk.isPresent()) {
-                System.out.println("✓ " + cashier.getName() + " (ID: " + cashier.getId() + 
+                System.out.println(cashier.getName() + " (ID: " + cashier.getId() + 
                         ") is assigned to desk " + assignedDesk.get().getId());
             } else {
                 System.out.println("○ " + cashier.getName() + " (ID: " + cashier.getId() + 
@@ -334,13 +334,13 @@ public class StoreDemo {
         // 2. Find cashier and desk by ID
         System.out.println("\n--- Search Tests ---");
         var foundCashier = cashdeskService.findCashierById("C1");
-        foundCashier.ifPresent(cashier -> System.out.println("✓ Found cashier C1: " + cashier.getName()));
+        foundCashier.ifPresent(cashier -> System.out.println("Found cashier C1: " + cashier.getName()));
         
         List<CashDesk> allDesks = cashdeskService.listCashDesks();
         if (!allDesks.isEmpty()) {
             String firstDeskId = allDesks.getFirst().getId();
             var foundDesk = cashdeskService.findCashDeskById(firstDeskId);
-            foundDesk.ifPresent(cashDesk -> System.out.println("✓ Found desk " + firstDeskId +
+            foundDesk.ifPresent(cashDesk -> System.out.println("Found desk " + firstDeskId +
                     " (Occupied: " + cashDesk.isOccupied() + ")"));
         }
 
@@ -354,16 +354,16 @@ public class StoreDemo {
             var petyaCurrentDesk = cashdeskService.getAssignedDeskForCashier("C1");
             if (petyaCurrentDesk.isPresent()) {
                 cashdeskService.releaseCashierFromDesk(petyaCurrentDesk.get().getId());
-                System.out.println("✓ Released Petya from desk " + petyaCurrentDesk.get().getId());
+                System.out.println("Released Petya from desk " + petyaCurrentDesk.get().getId());
             }
             
             // Assign to new desk
             cashdeskService.assignCashierToDesk("C1", secondDeskId);
-            System.out.println("✓ Assigned Petya to desk " + secondDeskId);
+            System.out.println("Assigned Petya to desk " + secondDeskId);
             
             // Verify the change
             var newAssignment = cashdeskService.getAssignedDeskForCashier("C1");
-            newAssignment.ifPresent(cashDesk -> System.out.println("✓ Verified: Petya is now on desk " + cashDesk.getId()));
+            newAssignment.ifPresent(cashDesk -> System.out.println("Verified: Petya is now on desk " + cashDesk.getId()));
         }
 
         // 4. Assign second cashier (Georgi) to the first desk
@@ -371,17 +371,17 @@ public class StoreDemo {
         if (!allDesks.isEmpty()) {
             String firstDeskId = allDesks.getFirst().getId();
             cashdeskService.assignCashierToDesk("C2", firstDeskId);
-            System.out.println("✓ Assigned Georgi to desk " + firstDeskId);
+            System.out.println("Assigned Georgi to desk " + firstDeskId);
         }
 
         // 5. Show final assignments
         System.out.println("\n--- Final Cashier Assignments ---");
         for (Cashier cashier : allCashiers) {
             var assignedDesk = cashdeskService.getAssignedDeskForCashier(cashier.getId());
-            assignedDesk.ifPresent(cashDesk -> System.out.println("✓ " + cashier.getName() + " → Desk " + cashDesk.getId()));
+            assignedDesk.ifPresent(cashDesk -> System.out.println(cashier.getName() + " -> Desk " + cashDesk.getId()));
         }
         
-        System.out.println("✓ Cashdesk work completed");
+        System.out.println("Cashdesk work completed");
     }
 
     private static void demonstrateExceptions(Customer customer) {
@@ -392,7 +392,7 @@ public class StoreDemo {
             Cashier cashier = cashdeskService.listCashiers().getFirst();
             storeService.sell(cashier, "INVALID", 1, customer);
         } catch (Exception e) {
-            System.out.println("✓ ProductNotFoundException: " + e.getMessage());
+            System.out.println("ProductNotFoundException: " + e.getMessage());
         }
 
         try {
@@ -400,7 +400,7 @@ public class StoreDemo {
             Cashier cashier = cashdeskService.listCashiers().getFirst();
             storeService.sell(cashier, "F1", 100, customer);
         } catch (Exception e) {
-            System.out.println("✓ InsufficientQuantityException: " + e.getMessage());
+            System.out.println("InsufficientQuantityException: " + e.getMessage());
         }
 
         try {
@@ -409,7 +409,7 @@ public class StoreDemo {
             Cashier cashier = cashdeskService.listCashiers().getFirst();
             storeService.sell(cashier, "N2", 1, poorCustomer);
         } catch (Exception e) {
-            System.out.println("✓ InsufficientBudgetException: " + e.getMessage());
+            System.out.println("InsufficientBudgetException: " + e.getMessage());
         }
 
         try {
@@ -420,7 +420,7 @@ public class StoreDemo {
             // Note: We don't assign this cashier to any desk, so they remain unassigned
             storeService.sell(unassignedCashier, "F1", 1, customer);
         } catch (Exception e) {
-            System.out.println("✓ IllegalStateException: " + e.getMessage());
+            System.out.println("IllegalStateException: " + e.getMessage());
         }
 
         try {
@@ -432,7 +432,7 @@ public class StoreDemo {
                 storeService.sell(cashier, "EXP1", 1, customer);
             }
         } catch (Exception e) {
-            System.out.println("✓ ProductExpiredException: " + e.getMessage());
+            System.out.println("ProductExpiredException: " + e.getMessage());
         }
 
         try {
@@ -444,7 +444,7 @@ public class StoreDemo {
             CashDesk occupiedDesk = cashdeskService.listCashDesks().getFirst(); 
             cashdeskService.assignCashierToDesk(newCashier.getId(), occupiedDesk.getId());
         } catch (Exception e) {
-            System.out.println("✓ CashDeskOccupiedException: " + e.getMessage());
+            System.out.println("CashDeskOccupiedException: " + e.getMessage());
         }
 
         try {
@@ -452,7 +452,7 @@ public class StoreDemo {
             Cashier cashier = cashdeskService.listCashiers().getFirst();
             storeService.sell(cashier, "F1", 0, customer);
         } catch (Exception e) {
-            System.out.println("✓ IllegalArgumentException: " + e.getMessage());
+            System.out.println("IllegalArgumentException: " + e.getMessage());
         }
     }
 
@@ -461,7 +461,7 @@ public class StoreDemo {
         
         // Show total products
         List<Product> allProducts = goodsService.listProducts();
-        System.out.println("✓ Total products in inventory: " + allProducts.size());
+        System.out.println("Total products in inventory: " + allProducts.size());
         
         // Find products by ID
         System.out.println("\n--- Product Lookup by ID ---");
@@ -470,7 +470,7 @@ public class StoreDemo {
         for (String productId : productIds) {
             Product foundProduct = goodsService.find(productId);
             if (foundProduct != null) {
-                System.out.printf("✓ Found %-3s: %-15s ($%.2f, qty: %d)\n", 
+                System.out.printf("Found %-3s: %-15s ($%.2f, qty: %d)\n", 
                     productId, foundProduct.getName(), 
                     foundProduct.getPurchasePrice(), foundProduct.getQuantity());
             } else {
@@ -485,9 +485,9 @@ public class StoreDemo {
             .count();
         long nonFoodCount = allProducts.size() - foodCount;
         
-        System.out.println("✓ Food products: " + foodCount);
-        System.out.println("✓ Non-food products: " + nonFoodCount);
+        System.out.println("Food products: " + foodCount);
+        System.out.println("Non-food products: " + nonFoodCount);
         
-        System.out.println("✓ Product search completed");
+        System.out.println("Product search completed");
     }
 } 
