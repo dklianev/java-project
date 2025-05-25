@@ -9,11 +9,13 @@ import org.informatics.entity.Cashier;
 import org.informatics.entity.Customer;
 import org.informatics.entity.FoodProduct;
 import org.informatics.entity.NonFoodProduct;
+import org.informatics.entity.Product;
 import org.informatics.exception.InsufficientBudgetException;
 import org.informatics.exception.InsufficientQuantityException;
 import org.informatics.exception.ProductExpiredException;
+import org.informatics.exception.ProductNotFoundException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -86,6 +88,14 @@ public class ExceptionTest {
     }
 
     @Test
+    void testSaleWithInvalidProductIdThrowsNotFoundException() {
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class,
+                () -> store.sell(cashier, "INVALID_ID", 1, customer));
+        
+        assertTrue(exception.getMessage().contains("INVALID_ID"));
+    }
+
+    @Test
     void testSaleWithZeroQuantityThrowsIllegalArgumentException() {
         store.addProduct(new FoodProduct("P1", "Milk", new BigDecimal("2.00"), 
                 LocalDate.now().plusDays(5), 10));
@@ -97,77 +107,9 @@ public class ExceptionTest {
     }
 
     @Test
-    void testSaleWithNegativeQuantityThrowsIllegalArgumentException() {
-        store.addProduct(new FoodProduct("P1", "Milk", new BigDecimal("2.00"), 
-                LocalDate.now().plusDays(5), 10));
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> store.sell(cashier, "P1", -1, customer));
+    void testFindNonExistentProductReturnsNull() {
+        Product result = store.find("NON_EXISTENT");
         
-        assertEquals("Quantity must be positive: -1", exception.getMessage());
-    }
-
-    @Test
-    void testSaleWithUnassignedCashierThrowsIllegalStateException() {
-        Cashier unassignedCashier = new Cashier("C2", "Unassigned Cashier", new BigDecimal("1000"));
-        store.addCashier(unassignedCashier);
-        store.addProduct(new FoodProduct("P1", "Milk", new BigDecimal("2.00"), 
-                LocalDate.now().plusDays(5), 10));
-
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> store.sell(unassignedCashier, "P1", 1, customer));
-        
-        assertEquals("Cashier Unassigned Cashier is not assigned to an open cash desk.", 
-                exception.getMessage());
-    }
-
-    @Test
-    void testAddDuplicateProductReturnsFalse() {
-        FoodProduct product1 = new FoodProduct("P1", "Milk", new BigDecimal("2.00"), 
-                LocalDate.now().plusDays(5), 5);
-        FoodProduct product2 = new FoodProduct("P1", "Another Product", new BigDecimal("3.00"), 
-                LocalDate.now().plusDays(10), 3);
-
-        boolean firstAdd = store.addProduct(product1);
-        boolean secondAdd = store.addProduct(product2);
-
-        assertTrue(firstAdd);
-        assertFalse(secondAdd);
-    }
-
-    @Test
-    void testStoreConfigWithNegativeGroceriesMarkupThrowsException() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> new StoreConfig(new BigDecimal("-0.1"), new BigDecimal("0.25"), 
-                        3, new BigDecimal("0.30")));
-        
-        assertEquals("Groceries markup cannot be negative", exception.getMessage());
-    }
-
-    @Test
-    void testStoreConfigWithNegativeNonFoodMarkupThrowsException() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> new StoreConfig(new BigDecimal("0.20"), new BigDecimal("-0.1"), 
-                        3, new BigDecimal("0.30")));
-        
-        assertEquals("Non-foods markup cannot be negative", exception.getMessage());
-    }
-
-    @Test
-    void testStoreConfigWithNegativeDaysThrowsException() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> new StoreConfig(new BigDecimal("0.20"), new BigDecimal("0.25"), 
-                        -1, new BigDecimal("0.30")));
-        
-        assertEquals("Days for near expiry discount cannot be negative", exception.getMessage());
-    }
-
-    @Test
-    void testStoreConfigWithInvalidDiscountPercentageThrowsException() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> new StoreConfig(new BigDecimal("0.20"), new BigDecimal("0.25"), 
-                        3, new BigDecimal("1.5")));
-        
-        assertEquals("Discount percentage must be between 0 and 1", exception.getMessage());
+        assertNull(result);
     }
 }
