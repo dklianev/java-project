@@ -31,10 +31,10 @@ import org.informatics.store.Store;
 public class StoreDemo {
     
     // Config values
-    private static final BigDecimal FOOD_MARKUP_RATE = new BigDecimal("0.20");
-    private static final BigDecimal NON_FOOD_MARKUP_RATE = new BigDecimal("0.25");
-    private static final int NEAR_EXPIRY_DAYS_THRESHOLD = 3;
-    private static final BigDecimal NEAR_EXPIRY_DISCOUNT_RATE = new BigDecimal("0.30");
+    private static final BigDecimal FOOD_MARKUP_RATE = new BigDecimal("0.20");  // 20% food markup
+    private static final BigDecimal NON_FOOD_MARKUP_RATE = new BigDecimal("0.25"); // 25% non-food markup
+    private static final int NEAR_EXPIRY_DAYS_THRESHOLD = 3; // 3 days for near-expiry discount
+    private static final BigDecimal NEAR_EXPIRY_DISCOUNT_RATE = new BigDecimal("0.30"); // 30% discount
 
     // Services
     private static StoreService storeService;
@@ -50,10 +50,10 @@ public class StoreDemo {
             // Setup store
             // 1. Setup store with config
             StoreConfig config = new StoreConfig(
-                    FOOD_MARKUP_RATE,           // 20% food markup
-                    NON_FOOD_MARKUP_RATE,       // 25% non-food markup
-                    NEAR_EXPIRY_DAYS_THRESHOLD, // 3 days for near-expiry discount
-                    NEAR_EXPIRY_DISCOUNT_RATE   // 30% discount
+                    FOOD_MARKUP_RATE,
+                    NON_FOOD_MARKUP_RATE,
+                    NEAR_EXPIRY_DAYS_THRESHOLD,
+                    NEAR_EXPIRY_DISCOUNT_RATE
             );
             Store store = new Store(config);
             
