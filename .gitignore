@@ -50,5 +50,3 @@ bin/
 
 # IntelliJ modules
 *.iml
-
-/receipts/*
