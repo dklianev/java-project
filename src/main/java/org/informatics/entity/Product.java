@@ -50,7 +50,11 @@ public class Product implements Serializable {
 
     // Can accept negative values for sales (reducing inventory)
     public void addQuantity(int d) {
-        qty += d;
+        int newQuantity = qty + d;
+        if (newQuantity < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative. Current: " + qty + ", attempting to add: " + d);
+        }
+        qty = newQuantity;
     }
 
     // Product is expired if expiry date is today or earlier

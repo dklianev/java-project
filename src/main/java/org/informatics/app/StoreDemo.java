@@ -159,6 +159,23 @@ public class StoreDemo {
         if (!duplicateAttempt) {
             System.out.println("✓ Correctly prevented duplicate product ID 'F1'");
         }
+        
+        // Demonstrate restocking functionality
+        System.out.println("\n--- Restocking Demo ---");
+        Product milkBefore = goodsService.find("F1");
+        System.out.println("Milk quantity before restock: " + milkBefore.getQuantity());
+        
+        boolean restockSuccess = goodsService.restockProduct("F1", 25); // Add 25 more milk
+        if (restockSuccess) {
+            Product milkAfter = goodsService.find("F1");
+            System.out.println("✓ Restocked milk with 25 units. New quantity: " + milkAfter.getQuantity());
+        }
+        
+        // Try restocking non-existent product
+        boolean restockFail = goodsService.restockProduct("INVALID", 10);
+        if (!restockFail) {
+            System.out.println("✓ Correctly prevented restocking non-existent product");
+        }
     }
 
     private static void showInventory(String title) {

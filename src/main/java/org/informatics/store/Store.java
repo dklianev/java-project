@@ -112,6 +112,26 @@ public class Store {
         return true;
     }
 
+    // Restock existing product with additional quantity
+    public boolean restockProduct(String productId, int additionalQuantity) {
+        if (additionalQuantity <= 0) {
+            throw new IllegalArgumentException("Additional quantity must be positive: " + additionalQuantity);
+        }
+        
+        Product existing = inventory.get(productId);
+        if (existing == null) {
+            return false; // Product doesn't exist
+        }
+        
+        existing.addQuantity(additionalQuantity);
+        
+        // Update total cost of goods supplied
+        totalCostOfAllGoodsSupplied = totalCostOfAllGoodsSupplied.add(
+                existing.getPurchasePrice().multiply(BigDecimal.valueOf(additionalQuantity)));
+        
+        return true;
+    }
+
     public Product find(String id) {
         return inventory.get(id);
     }

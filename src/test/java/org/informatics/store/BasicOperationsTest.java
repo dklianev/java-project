@@ -11,6 +11,7 @@ import org.informatics.entity.FoodProduct;
 import org.informatics.entity.Product;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -107,6 +108,20 @@ class BasicOperationsTest {
         
         // Assert
         assertEquals(12, store.find("F1").getQuantity()); // 15 - 3 = 12
+    }
+
+    @Test
+    void testProductQuantityCannotBeNegative() {
+        // Arrange
+        Product product = new FoodProduct("F1", "Test Milk", new BigDecimal("2.50"), 
+                LocalDate.now().plusDays(7), 5);
+        
+        // Act & Assert - trying to reduce quantity below zero should throw exception
+        assertThrows(IllegalArgumentException.class, 
+                () -> product.addQuantity(-10)); // Would make quantity -5
+        
+        // Verify quantity is unchanged
+        assertEquals(5, product.getQuantity());
     }
 
 

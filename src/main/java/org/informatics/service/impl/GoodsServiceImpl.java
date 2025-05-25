@@ -20,6 +20,11 @@ public class GoodsServiceImpl implements GoodsService {
     }
 
     @Override
+    public boolean restockProduct(String productId, int additionalQuantity) throws IllegalArgumentException {
+        return store.restockProduct(productId, additionalQuantity);
+    }
+
+    @Override
     public List<Product> listProducts() {
         return store.listProducts();
     }

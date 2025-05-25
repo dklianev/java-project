@@ -18,7 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class ReceiptTest {
+class ReceiptTest {
 
     private Store store;
     private Cashier cashier;
