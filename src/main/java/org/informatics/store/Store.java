@@ -97,7 +97,7 @@ public class Store {
 
     public Optional<CashDesk> getAssignedDeskForCashier(String cashierId) {
         return cashDesks.stream()
-                .filter(desk -> desk.isOpen() && desk.getCurrentCashier() != null && desk.getCurrentCashier().getId().equals(cashierId))
+                .filter(desk -> desk.isOccupied() && desk.getCurrentCashier().getId().equals(cashierId))
                 .findFirst();
     }
 

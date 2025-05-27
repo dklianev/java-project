@@ -104,7 +104,7 @@ class CashDeskManagementTest {
         List<CashDesk> desks = store.listCashDesks();
         assertEquals(1, desks.size());
         assertFalse(desks.getFirst().isOccupied());
-        assertFalse(desks.getFirst().isOpen());
+        assertFalse(desks.getFirst().isOccupied());
         assertTrue(store.findCashDeskById(desk.getId()).isPresent());
     }
 
@@ -121,7 +121,7 @@ class CashDeskManagementTest {
         
         // Assert
         assertTrue(desk.isOccupied());
-        assertTrue(desk.isOpen());
+        assertTrue(desk.isOccupied());
         assertEquals("C1", desk.getCurrentCashier().getId());
         assertTrue(store.getAssignedDeskForCashier("C1").isPresent());
         assertEquals(desk.getId(), store.getAssignedDeskForCashier("C1").get().getId());
@@ -166,7 +166,7 @@ class CashDeskManagementTest {
         
         // Assert
         assertFalse(desk.isOccupied());
-        assertFalse(desk.isOpen());
+        assertFalse(desk.isOccupied());
         assertNull(desk.getCurrentCashier());
         assertFalse(store.getAssignedDeskForCashier("C1").isPresent());
     }

@@ -12,12 +12,10 @@ public class CashDesk implements Serializable {
 
     private final String id;
     private Cashier currentCashier;
-    private boolean isOpen;         // Desk is open only when a cashier is assigned
 
     public CashDesk() {
         this.id = "D" + nextId++;
         this.currentCashier = null;
-        this.isOpen = false;
     }
 
     public String getId() {
@@ -28,11 +26,6 @@ public class CashDesk implements Serializable {
         return currentCashier;
     }
 
-    public boolean isOpen() {
-        return isOpen;
-    }
-
-    // Different from isOpen: desk can be occupied but not open
     public boolean isOccupied() {
         return currentCashier != null;
     }
@@ -41,7 +34,6 @@ public class CashDesk implements Serializable {
     public void assignCashier(Cashier cashier) throws CashDeskOccupiedException {
         if (this.currentCashier == null) {
             this.currentCashier = cashier;
-            this.isOpen = true;
         } else {
             throw new CashDeskOccupiedException(
                 "Cash desk " + id + " is already occupied by " + this.currentCashier.getName());
@@ -52,7 +44,6 @@ public class CashDesk implements Serializable {
         if (this.currentCashier != null) {
             System.out.println("Cashier " + this.currentCashier.getName() + " released from desk " + id);
             this.currentCashier = null;
-            this.isOpen = false;
         }
     }
 } 
